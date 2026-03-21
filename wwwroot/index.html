@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EcoMarketplace - Front</title>
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; margin: 20px; }
+    .container { max-width: 900px; margin: auto; }
+    .card { border: 1px solid #ddd; padding: 12px; margin-bottom: 12px; border-radius: 6px; }
+    input, textarea { width: 100%; padding: 8px; margin: 4px 0 8px; }
+    button { padding: 8px 12px; margin-right: 6px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 8px; border-bottom: 1px solid #eee; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>EcoMarketplace - Front (CRUD)</h1>
+
+    <div class="card">
+      <h2>Auth</h2>
+      <div>
+        <input id="regEmail" placeholder="Email" />
+        <input id="regPassword" placeholder="Password" type="password" />
+        <input id="regDisplayName" placeholder="Display Name" />
+        <button onclick="register()">Register</button>
+      </div>
+      <hr/>
+      <div>
+        <input id="loginEmail" placeholder="Email" />
+        <input id="loginPassword" placeholder="Password" type="password" />
+        <button onclick="login()">Login</button>
+      </div>
+      <p id="authMsg"></p>
+    </div>
+
+    <div class="card">
+      <h2>Products</h2>
+
+      <h3>Create product</h3>
+      <input id="pName" placeholder="Name" />
+      <input id="pCategory" placeholder="Category" />
+      <input id="pPrice" placeholder="Price" type="number" step="0.01" />
+      <textarea id="pDescription" placeholder="Description"></textarea>
+      <button onclick="createProduct()">Create</button>
+
+      <h3>List</h3>
+      <div id="products"></div>
+    </div>
+
+    <div class="card">
+      <h2>Transactions</h2>
+      <input id="buyBuyerId" placeholder="BuyerId (int)" />
+      <input id="buyProductId" placeholder="ProductId (int)" />
+      <input id="buyQuantity" placeholder="Quantity" value="1" />
+      <button onclick="purchase()">Purchase</button>
+      <p id="txMsg"></p>
+    </div>
+
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

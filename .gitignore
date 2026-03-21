@@ -1,0 +1,74 @@
+# .NET
+bin/
+obj/
+*.exe
+*.dll
+*.pdb
+*.so
+*.dylib
+*.so.1
+
+# Visual Studio
+.vs/
+.vscode/
+*.sln.iml
+*.sln.DotSettings
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.user
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+
+# IDE files
+.idea/
+*.swp
+*.swo
+*~
+
+# Node/npm (Frontend)
+node_modules/
+npm-debug.log
+yarn-error.log
+dist/
+.angular/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build output
+out/
+build/
+dist/
+
+# Application specific
+appsettings.*.json
+!appsettings.Development.json
+!appsettings.Production.json
+!appsettings.json
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+*.mdf
+*.ldf
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
