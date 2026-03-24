@@ -2,20 +2,21 @@
 
 Une plateforme d'e-commerce durable dédiée à l'achat et la vente de produits recyclés et écologiques. Le projet combine un backend .NET 8.0 avec une base de données PostgreSQL et un frontend Angular avec TypeScript.
 
-# EcoMarketplace
-composee de :
-- un backend ASP.NET Core 8 (API REST)
-- un frontend Angular 21 (SSR)
-- une base PostgreSQL (Entity Framework Core)
+
 
 ## Apercu fonctionnel
+EcoMarketplace est une plateforme d'e-commerce complète permettant aux utilisateurs de:
 
-EcoMarketplace permet de :
-- gerer l'authentification des utilisateurs (Buyer, Seller, Admin)
-- publier et consulter des produits
-- suivre des transactions d'achat
-- administrer les utilisateurs, produits et statistiques globales
-- utiliser une logique EcoScore et badges dans le domaine metier
+- S'enregistrer en tant que Buyer (Acheteur) ou Seller (Vendeur)
+- Lister et acheter des produits écologiques
+- Analyser leur empreinte carbone grâce à un EcoScore
+- Accumuler des points et des badges de contribution écologique
+- Gérer les transactions (achats et ventes)
+  
+Les administrateurs bénéficient d'un tableau de bord complet pour:
+- Gérer tous les utilisateurs (statut, suppression)
+- Gérer tous les produits (validation, suppression permanente)
+- Consulter des statistiques détaillées (utilisateurs, produits, revenus multi-devises, CO2 savings)
 
 ## Stack technique
 
