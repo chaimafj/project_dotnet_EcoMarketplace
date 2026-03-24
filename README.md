@@ -1,4 +1,4 @@
-EcoMarketplace - Plateforme d'Échange Écologique
+# EcoMarketplace - Plateforme d'Échange Écologique
 
 Une plateforme d'e-commerce durable dédiée à l'achat et la vente de produits recyclés et écologiques. Le projet combine un backend .NET 8.0 avec une base de données PostgreSQL et un frontend Angular avec TypeScript.
 
