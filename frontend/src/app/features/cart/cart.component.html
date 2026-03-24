@@ -1,0 +1,125 @@
+<section class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Mon panier</h2>
+    <a class="btn btn-outline-secondary btn-sm" [routerLink]="['/products']">Continuer mes achats</a>
+  </div>
+
+  <div *ngIf="message" class="alert alert-info">
+    {{ message }}
+  </div>
+
+  <div *ngIf="items.length === 0" class="alert alert-light border">
+    Votre panier est vide.
+  </div>
+
+  <div *ngIf="items.length === 0" class="mt-3">
+    <button type="button" class="btn btn-success" [disabled]="true">
+      Ajoutez un produit au panier
+    </button>
+  </div>
+
+  <div *ngIf="items.length > 0" class="row g-3">
+    <div class="col-12" *ngFor="let item of items">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body d-flex flex-wrap align-items-center gap-3">
+          <img [src]="item.image" [alt]="item.title" class="thumb" />
+
+          <div class="flex-grow-1">
+            <h5 class="mb-1">{{ item.title }}</h5>
+            <small class="text-muted">Vendeur: {{ item.sellerName }}</small>
+            <div class="text-muted small">{{ item.price | currency:'EUR':'symbol':'1.2-2' }} / unité</div>
+          </div>
+
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-outline-secondary btn-sm" (click)="decrease(item)">-</button>
+            <span class="qty">{{ item.quantity }}</span>
+            <button class="btn btn-outline-secondary btn-sm" (click)="increase(item)">+</button>
+          </div>
+
+          <div class="text-end">
+            <div class="fw-semibold">{{ item.price * item.quantity | currency:'EUR':'symbol':'1.2-2' }}</div>
+            <button class="btn btn-link text-danger p-0" (click)="remove(item)">Retirer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body">
+          <h5 class="mb-3">Formulaire de commande</h5>
+
+          <form [formGroup]="orderForm" class="row g-3" novalidate>
+            <div class="col-md-6">
+              <label class="form-label">Nom complet</label>
+              <input type="text" class="form-control" formControlName="fullName" placeholder="Votre nom complet">
+              <small class="text-danger" *ngIf="orderForm.get('fullName')?.touched && orderForm.get('fullName')?.invalid">
+                Nom complet obligatoire.
+              </small>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Email (profil)</label>
+              <input type="text" class="form-control" formControlName="email" readonly>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Téléphone</label>
+              <input type="text" class="form-control" formControlName="phone" placeholder="Ex: 22123456">
+              <small class="text-danger" *ngIf="orderForm.get('phone')?.touched && orderForm.get('phone')?.invalid">
+                Téléphone obligatoire.
+              </small>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">Adresse</label>
+              <input type="text" class="form-control" formControlName="address" placeholder="Rue, numéro, quartier...">
+              <small class="text-danger" *ngIf="orderForm.get('address')?.touched && orderForm.get('address')?.invalid">
+                Adresse obligatoire.
+              </small>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Ville</label>
+              <input type="text" class="form-control" formControlName="city" placeholder="Votre ville">
+              <small class="text-danger" *ngIf="orderForm.get('city')?.touched && orderForm.get('city')?.invalid">
+                Ville obligatoire.
+              </small>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Code postal</label>
+              <input type="text" class="form-control" formControlName="postalCode" placeholder="Ex: 1000">
+              <small class="text-danger" *ngIf="orderForm.get('postalCode')?.touched && orderForm.get('postalCode')?.invalid">
+                Code postal obligatoire.
+              </small>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Mode de paiement</label>
+              <select class="form-select" formControlName="paymentMethod">
+                <option value="Carte">Carte bancaire</option>
+                <option value="CashOnDelivery">Paiement à la livraison</option>
+                <option value="Virement">Virement bancaire</option>
+              </select>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3">
+          <div>
+            <div class="text-muted">Total</div>
+            <div class="h4 mb-0">{{ total | currency:'EUR':'symbol':'1.2-2' }}</div>
+          </div>
+          <button type="button" class="btn btn-success" [disabled]="!canCheckout()" (click)="checkout()">
+            {{ getCheckoutLabel() }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,87 @@
+:host {
+  display: block;
+}
+
+.auth-page {
+  min-height: calc(100vh - 56px);
+  background:
+    radial-gradient(circle at 12% 12%, rgba(83, 188, 134, 0.16) 0%, transparent 40%),
+    #f4f6f3;
+}
+
+.auth-card {
+  border-radius: 20px;
+  box-shadow: 0 22px 44px rgba(20, 30, 25, 0.09) !important;
+}
+
+.auth-visual {
+  background:
+    linear-gradient(170deg, rgba(9, 44, 33, 0.74), rgba(35, 113, 79, 0.7)),
+    url("https://images.unsplash.com/photo-1495107334309-fcf20504a5ab?auto=format&fit=crop&w=900&q=80") center/cover;
+  min-height: 100%;
+  padding: 2rem;
+  align-items: flex-end;
+}
+
+.visual-inner {
+  animation: fadeRise 0.85s ease both;
+}
+
+.mini-banner {
+  border-radius: 14px;
+  padding: 12px;
+  border: 1px solid #e0e7e1;
+  background: #f8fbf9;
+}
+
+.social-btn {
+  border: 1px solid #dce4dd;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.google-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ea4335, #fbbc05, #34a853, #4285f4);
+}
+
+.register-form .form-label {
+  font-weight: 600;
+  color: #25343a;
+}
+
+.register-form .form-control {
+  border-radius: 10px;
+  min-height: 46px;
+  border: 1px solid #c8d0d9;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.register-form .form-select {
+  border-radius: 10px;
+  min-height: 46px;
+  border: 1px solid #c8d0d9;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.register-form .form-control:focus {
+  border-color: #1f8f5a;
+  box-shadow: 0 0 0 4px rgba(31, 143, 90, 0.14);
+}
+
+.register-form .form-select:focus {
+  border-color: #1f8f5a;
+  box-shadow: 0 0 0 4px rgba(31, 143, 90, 0.14);
+}
+
+.register-form .btn-success {
+  min-height: 50px;
+  border-radius: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  box-shadow: 0 12px 22px rgba(16, 112, 69, 0.24);
+}

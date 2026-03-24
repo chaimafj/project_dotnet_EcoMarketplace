@@ -1,0 +1,167 @@
+<section class="market-wrap py-4">
+  <div class="container">
+    <div class="market-banner p-4 p-lg-5 mb-4 fade-rise">
+      <div class="row align-items-center g-3">
+        <div class="col-lg-8">
+          <h2 class="mb-2 text-white">Marketplace durable</h2>
+          <p class="mb-0 text-white-50">Decouvrez des produits avec EcoScore, impact carbone et filtres intelligents.</p>
+        </div>
+        <div class="col-lg-4 text-lg-end">
+          <span class="pill-info">{{ totalCount }} produits disponibles</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+    <!-- Filters Sidebar -->
+    <div class="col-md-3">
+      <div class="card filter-card border-0 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">Filtres</h5>
+          <form [formGroup]="filterForm">
+            <div class="mb-3">
+              <label class="form-label">Recherche</label>
+              <input type="text" class="form-control" formControlName="search" placeholder="Nom, materiau, lieu...">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Categorie</label>
+              <select class="form-select" formControlName="category">
+                <option value="">Toutes les categories</option>
+                <option *ngFor="let category of categories" [value]="category">{{category}}</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">EcoScore minimum</label>
+              <select class="form-select" formControlName="minEcoScore">
+                <option *ngFor="let range of ecoScoreRanges" [value]="range.min">{{range.label}}</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Prix maximum</label>
+              <input type="number" class="form-control" formControlName="maxPrice" placeholder="Prix libre">
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="col-md-9">
+      <div class="alert alert-success border-0 shadow-sm purchase-alert" *ngIf="purchaseMessage">
+        {{ purchaseMessage }}
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0">Produits ({{totalCount}})</h4>
+        <span class="text-muted">Tri par EcoScore</span>
+      </div>
+
+      <div *ngIf="loading" class="text-center">
+        <div class="spinner-border" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+
+      <div *ngIf="!loading && products.length === 0" class="alert alert-info border-0 shadow-sm">
+        Aucun produit ne correspond a vos filtres.
+      </div>
+
+      <div class="row">
+        <div *ngFor="let product of products; let i = index" class="col-md-6 col-lg-4 mb-4">
+          <div class="card h-100 product-card border-0 shadow-sm fade-rise" [style.animationDelay.ms]="i * 80">
+            <div class="product-image-frame">
+              <img [src]="getCurrentProductImage(product)"
+                   class="card-img-top"
+                   [alt]="product.title"
+                   (error)="onProductImageError($event)"
+                   style="height: 200px; object-fit: cover;">
+              <button *ngIf="showImageNavigation(product)" type="button" class="image-nav prev" (click)="previousImage(product, $event)">‹</button>
+              <button *ngIf="showImageNavigation(product)" type="button" class="image-nav next" (click)="nextImage(product, $event)">›</button>
+              <div *ngIf="showImageNavigation(product)" class="image-counter">
+                {{ getCurrentImagePosition(product) }}/{{ product.images?.length }}
+              </div>
+            </div>
+
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start gap-2">
+                <h5 class="card-title mb-1">{{product.title}}</h5>
+                <span *ngIf="isOwnProduct(product)" class="own-product-badge">
+                  <span class="own-product-icon" aria-hidden="true">✓</span>
+                  Votre produit
+                </span>
+              </div>
+              <p class="card-text text-muted">{{product.description | slice:0:100}}...</p>
+
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="h5 mb-0">{{ formatPriceWithCurrency(product.price, product.currency) }}</span>
+                <span class="badge" [ngClass]="{
+                  'bg-success': product.ecoScore >= 80,
+                  'bg-warning': product.ecoScore >= 50 && product.ecoScore < 80,
+                  'bg-danger': product.ecoScore < 50
+                }">
+                  EcoScore {{product.ecoScore}}
+                </span>
+              </div>
+
+              <div class="mb-2">
+                <span class="badge bg-secondary me-1">{{product.category}}</span>
+                <span class="badge bg-info">{{product.condition}}</span>
+              </div>
+
+              <div class="d-flex align-items-center text-muted small">
+                <i class="bi bi-geo-alt me-1"></i>
+                <span>{{product.location}}</span>
+              </div>
+            </div>
+
+            <div class="card-footer bg-transparent">
+              <div class="seller-info mb-2">
+                <small class="text-muted d-block">Vendeur: {{product.sellerName}}</small>
+              </div>
+              <div class="d-flex gap-2 align-items-center flex-wrap justify-content-between">
+                  <a [routerLink]="product.sellerId ? ['/seller', product.sellerId] : ['/products']" class="btn btn-xs btn-outline-info btn-sm" [class.disabled]="!product.sellerId">
+                    <i class="bi bi-shop"></i> Voir profil
+                  </a>
+                  <a [routerLink]="['/product', product.id]" class="btn btn-sm btn-outline-success" [class.disabled]="!hasProductId(product)">Voir details</a>
+                  <button
+                    *ngIf="canShowCartActions()"
+                    class="btn btn-sm btn-buy"
+                    [disabled]="!canCurrentUserBuy(product)"
+                    (click)="addToCart(product)">
+                    {{ getBuyButtonLabel(product) }}
+                  </button>
+                  <a *ngIf="canShowCartActions()" class="btn btn-sm btn-outline-primary" [routerLink]="['/cart']">Panier</a>
+                  <button
+                    *ngIf="isAdminUser()"
+                    class="btn btn-sm btn-outline-primary"
+                    [disabled]="validatingProductId === product.id"
+                    (click)="validateProduct(product)">
+                    <span *ngIf="validatingProductId !== product.id">Valider</span>
+                    <span *ngIf="validatingProductId === product.id" class="d-flex align-items-center gap-1">
+                      <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                      Validation...
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      <!-- Pagination -->
+      <ngb-pagination *ngIf="totalPages > 1"
+                      [(page)]="currentPage"
+                      [pageSize]="pageSize"
+                      [collectionSize]="totalCount"
+                      [maxSize]="5"
+                      [boundaryLinks]="true"
+                      (pageChange)="onPageChange($event)"
+                      class="d-flex justify-content-center">
+      </ngb-pagination>
+    </div>
+  </div>
+  </div>
+</section>

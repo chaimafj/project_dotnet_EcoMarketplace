@@ -1,0 +1,57 @@
+{
+  "name": "eco-marketplace.client",
+  "version": "0.0.0",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test",
+    "serve:ssr:EcoMarketplace.Client": "node dist/EcoMarketplace.Client/server/server.mjs"
+  },
+  "prettier": {
+    "printWidth": 100,
+    "singleQuote": true,
+    "overrides": [
+      {
+        "files": "*.html",
+        "options": {
+          "parser": "angular"
+        }
+      }
+    ]
+  },
+  "private": true,
+  "packageManager": "npm@10.9.2",
+  "dependencies": {
+    "@angular/common": "^21.1.0",
+    "@angular/compiler": "^21.1.0",
+    "@angular/core": "^21.1.0",
+    "@angular/forms": "^21.1.0",
+    "@angular/platform-browser": "^21.1.0",
+    "@angular/platform-server": "^21.1.0",
+    "@angular/router": "^21.1.0",
+    "@angular/ssr": "^21.1.4",
+    "@auth0/angular-jwt": "^5.2.0",
+    "@ng-bootstrap/ng-bootstrap": "^20.0.0",
+    "@ngrx/effects": "^21.0.1",
+    "@ngrx/store": "^21.0.1",
+    "@stripe/stripe-js": "^8.9.0",
+    "bootstrap": "^5.3.8",
+    "eco-marketplace-client": "file:../ClientApp",
+    "express": "^5.1.0",
+    "ngx-toastr": "^20.0.5",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0"
+  },
+  "devDependencies": {
+    "@angular/build": "^21.1.4",
+    "@angular/cli": "^21.1.4",
+    "@angular/compiler-cli": "^21.1.0",
+    "@types/express": "^5.0.1",
+    "@types/node": "^20.17.19",
+    "jsdom": "^27.1.0",
+    "typescript": "~5.9.2",
+    "vitest": "^4.0.8"
+  }
+}

@@ -1,0 +1,40 @@
+<nav class="navbar navbar-expand-lg navbar-dark modern-nav sticky-top">
+  <div class="container">
+    <a class="navbar-brand fw-bold d-flex align-items-center gap-2" [routerLink]="['/home']">
+      <span class="brand-dot"></span>
+      EcoMarketplace
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto align-items-lg-center">
+        <li class="nav-item">
+          <a class="nav-link" [routerLink]="['/home']">Accueil</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" [routerLink]="['/products']">Marketplace</a>
+        </li>
+        <li class="nav-item" *ngIf="!authService.isAuthenticated()">
+          <a class="nav-link" [routerLink]="['/login']">Connexion</a>
+        </li>
+        <li class="nav-item" *ngIf="!authService.isAuthenticated()">
+          <a class="btn btn-sm btn-light ms-lg-2" [routerLink]="['/register']">Creer compte</a>
+        </li>
+        <li class="nav-item" *ngIf="authService.isAuthenticated()">
+          <a class="nav-link" [routerLink]="[getDashboardRoute()]">Mon espace</a>
+        </li>
+        <li class="nav-item" *ngIf="authService.isAuthenticated() && isBuyer()">
+          <a class="nav-link" [routerLink]="['/cart']">Panier ({{ getCartCount() }})</a>
+        </li>
+        <li class="nav-item" *ngIf="authService.isAuthenticated()">
+          <button type="button" class="btn btn-sm btn-outline-light ms-lg-2" (click)="logout()">Deconnexion</button>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <router-outlet />
+</main>

@@ -1,0 +1,61 @@
+<section class="hero py-5">
+  <div class="container py-5 position-relative">
+    <div class="row align-items-center g-4">
+      <div class="col-lg-6 fade-rise">
+        <span class="badge badge-pill mb-3">Marketplace eco-responsable</span>
+        <h1 class="display-4 fw-bold text-white">Achetez mieux. Impactez moins.</h1>
+        <p class="lead text-white-50 mt-3">
+          Une interface moderne pour vendre et acheter durable, avec un EcoScore clair sur chaque produit.
+        </p>
+        <div class="d-flex flex-wrap gap-2 mt-4">
+          <a class="btn btn-light btn-lg px-4" [routerLink]="['/products']">Explorer maintenant</a>
+          <a class="btn btn-outline-light btn-lg px-4" [routerLink]="['/register']">Rejoindre la plateforme</a>
+        </div>
+
+        <div class="quick-stats mt-4">
+          <div class="quick-chip">EcoScore visible</div>
+          <div class="quick-chip">Filtres intelligents</div>
+          <div class="quick-chip">Parcours simple</div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="hero-media fade-rise" style="animation-delay: 160ms;">
+          <img
+            [src]="activeSlide.imageUrl"
+            [alt]="activeSlide.title"
+            class="hero-image">
+
+          <div class="slider-controls">
+            <button class="slide-arrow" type="button" (click)="onPrevClick()" aria-label="Photo precedente">
+              ‹
+            </button>
+            <button class="slide-arrow" type="button" (click)="onNextClick()" aria-label="Photo suivante">
+              ›
+            </button>
+          </div>
+
+          <div class="slider-dots" role="tablist" aria-label="Selection image hero">
+            <button
+              *ngFor="let slide of slides; let i = index"
+              type="button"
+              class="dot"
+              [class.active]="i === activeSlideIndex"
+              (click)="goToSlide(i)"
+              [attr.aria-label]="'Aller a la photo ' + (i + 1)">
+            </button>
+          </div>
+
+          <div class="floating-card card-a">
+            <div class="fw-semibold">{{ activeSlide.title }}</div>
+            <small>{{ activeSlide.subtitle }}</small>
+          </div>
+          <div class="floating-card card-b">
+            <div class="fw-semibold">{{ activeSlide.impactTitle }}</div>
+            <small>{{ activeSlide.impactSubtitle }}</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

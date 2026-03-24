@@ -1,0 +1,147 @@
+<div class="seller-products-wrap py-4">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+      <button class="btn btn-outline-secondary" (click)="goBack()">
+        <i class="bi bi-arrow-left"></i> Retour à la marketplace
+      </button>
+      <a class="btn btn-success" [routerLink]="['/products']">Explorer la marketplace</a>
+    </div>
+
+    <div class="portfolio-header mb-4 fade-rise" *ngIf="seller">
+      <p class="portfolio-kicker mb-1">Profil vendeur</p>
+      <h2 class="portfolio-title mb-0">{{ getSellerFullName() }} - Portfolio produits</h2>
+    </div>
+
+    <div *ngIf="seller" class="card border-0 shadow-sm mb-4 seller-info-card fade-rise">
+      <div class="card-body">
+        <div class="row align-items-center">
+          <div class="col-md-2 text-center">
+            <img [src]="seller.profilePictureUrl || 'https://via.placeholder.com/150'"
+                 [alt]="seller.username"
+                 class="rounded-circle"
+                 style="width: 120px; height: 120px; object-fit: cover;">
+            <div class="initials-chip mt-2">{{ sellerInitials }}</div>
+          </div>
+          <div class="col-md-10">
+            <h3 class="mb-2">{{ getSellerFullName() }}</h3>
+            <p class="text-muted mb-2">
+              <i class="bi bi-envelope"></i> {{ seller.email }}
+            </p>
+            <p class="text-muted mb-2">
+              <i class="bi bi-person-badge"></i> {{ seller.username }}
+            </p>
+            <div class="seller-stats">
+              <span class="badge bg-success me-2">
+                <i class="bi bi-star-fill"></i> EcoScore: {{ seller.ecoScore }}
+              </span>
+              <span class="badge bg-info">
+                <i class="bi bi-box-seam"></i> {{ totalCount }} produits
+              </span>
+            </div>
+            <p class="profile-bio mb-0 mt-3">
+              Vendeur engagé dans la revalorisation de produits durables. Consultez ci-dessous le portfolio complet.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!error" class="row g-3 mb-4">
+      <div class="col-md-4">
+        <div class="metric-card">
+          <div class="metric-value">{{ totalCount }}</div>
+          <div class="metric-label">Produits actifs</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="metric-card">
+          <div class="metric-value">{{ averageEcoScore }}</div>
+          <div class="metric-label">EcoScore moyen portfolio</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="metric-card">
+          <div class="metric-value">{{ portfolioValue | currency:'EUR':'symbol':'1.0-0' }}</div>
+          <div class="metric-label">Valeur du portfolio</div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!error" class="portfolio-meta mb-4">
+      <span class="meta-pill"><i class="bi bi-award"></i> Catégorie phare: {{ topCategory }}</span>
+      <span class="meta-pill"><i class="bi bi-shop"></i> Boutique: {{ seller?.username }}</span>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="error" class="alert alert-danger border-0 shadow-sm">
+      {{ error }}
+    </div>
+
+    <h4 *ngIf="!error" class="mb-3">Portfolio produits</h4>
+
+    <div *ngIf="!loading && products.length === 0 && !error" class="alert alert-info border-0 shadow-sm">
+      Ce vendeur n'a pas de produits actuellement.
+    </div>
+
+    <div *ngIf="loading" class="text-center py-5">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Chargement...</span>
+      </div>
+    </div>
+
+    <div class="row">
+      <div *ngFor="let product of products; let i = index" class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 product-card border-0 shadow-sm fade-rise" [style.animationDelay.ms]="i * 80">
+          <img [src]="product.image || product.images?.[0] || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=900&q=80'"
+               class="card-img-top"
+               [alt]="product.title"
+            (error)="onProductImageError($event)"
+               style="height: 200px; object-fit: cover;">
+
+          <div class="card-body">
+            <h5 class="card-title">{{ product.title }}</h5>
+            <p class="card-text text-muted">{{ product.description | slice:0:80 }}...</p>
+
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="h5 mb-0">{{ formatPriceWithCurrency(product.price, product.currency) }}</span>
+              <span class="badge" [ngClass]="{
+                'bg-success': product.ecoScore >= 80,
+                'bg-warning': product.ecoScore >= 50 && product.ecoScore < 80,
+                'bg-danger': product.ecoScore < 50
+              }">
+                EcoScore {{ product.ecoScore }}
+              </span>
+            </div>
+
+            <div class="mb-2">
+              <span class="badge bg-secondary me-1">{{ product.category }}</span>
+              <span class="badge bg-info">{{ product.condition }}</span>
+            </div>
+
+            <div class="d-flex align-items-center text-muted small">
+              <i class="bi bi-geo-alt me-1"></i>
+              <span>{{ product.location }}</span>
+            </div>
+          </div>
+
+          <div class="card-footer bg-transparent">
+            <a [routerLink]="['/product', product.id]" class="btn btn-sm btn-outline-success w-100">
+              Voir détails
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <ngb-pagination *ngIf="totalPages > 1"
+                    [(page)]="currentPage"
+                    [pageSize]="pageSize"
+                    [collectionSize]="totalCount"
+                    [maxSize]="5"
+                    [boundaryLinks]="true"
+                    (pageChange)="onPageChange($event)"
+                    class="d-flex justify-content-center mt-5">
+    </ngb-pagination>
+  </div>
+</div>

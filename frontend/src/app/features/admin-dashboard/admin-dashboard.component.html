@@ -1,0 +1,311 @@
+<div class="admin-dashboard">
+  <div class="dashboard-header">
+    <div class="header-content">
+      <h1>Panneau d'Administration</h1>
+      <p class="subtitle">Gestion complète de la plateforme</p>
+    </div>
+    <div class="admin-badge">
+      <span>👑 Administrateur</span>
+    </div>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <div class="dashboard-tabs">
+    <button 
+      class="tab-btn"
+      [class.active]="currentTab === 'overview'"
+      (click)="setTab('overview')">
+      📊 Aperçu
+    </button>
+    <button 
+      class="tab-btn"
+      [class.active]="currentTab === 'users'"
+      (click)="setTab('users')">
+      👥 Utilisateurs
+    </button>
+    <button 
+      class="tab-btn"
+      [class.active]="currentTab === 'products'"
+      (click)="setTab('products')">
+      📦 Produits
+    </button>
+    <button 
+      class="tab-btn"
+      [class.active]="currentTab === 'stats'"
+      (click)="setTab('stats')">
+      📈 Statistiques Détaillées
+    </button>
+  </div>
+
+  <!-- Tab Content -->
+  <div class="tab-content">
+    <!-- Overview Tab -->
+    <ng-container *ngIf="currentTab === 'overview'">
+      <div class="content-section">
+        <h2>Aperçu de la Plateforme</h2>
+        
+        <div class="stats-grid">
+          <div class="stats-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-info">
+              <p class="stat-label">Utilisateurs Totals</p>
+              <p class="stat-value">{{ platformStats.totalUsers }}</p>
+              <p class="stat-subvalue">{{ platformStats.activeUsers }} actifs</p>
+            </div>
+          </div>
+
+          <div class="stats-card">
+            <div class="stat-icon">📦</div>
+            <div class="stat-info">
+              <p class="stat-label">Produits en Vente</p>
+              <p class="stat-value">{{ platformStats.totalProducts }}</p>
+              <p class="stat-subvalue">{{ platformStats.availableProducts }} disponibles</p>
+            </div>
+          </div>
+
+          <div class="stats-card">
+            <div class="stat-icon">💳</div>
+            <div class="stat-info">
+              <p class="stat-label">Transactions</p>
+              <p class="stat-value">{{ platformStats.totalTransactions }}</p>
+            </div>
+          </div>
+
+          <div class="stats-card">
+            <div class="stat-icon">💶</div>
+            <div class="stat-info">
+              <p class="stat-label">Revenus Totals</p>
+              <p class="stat-value revenue-multi">{{ formatRevenueByCurrency() }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="environmental-impact">
+          <h3>Impact Environnemental</h3>
+          <div class="impact-grid">
+            <div class="impact-card">
+              <div class="impact-metric">
+                <span class="metric-value">{{ platformStats.environmentalImpact.totalCO2Saved }}</span>
+                <span class="metric-unit">kg</span>
+              </div>
+              <p class="metric-label">CO2 Épargné</p>
+              <p class="metric-desc">Émissions évitées par le recyclage</p>
+            </div>
+
+            <div class="impact-card">
+              <div class="impact-metric">
+                <span class="metric-value">{{ platformStats.environmentalImpact.averageRecycledPercentage }}</span>
+                <span class="metric-unit">%</span>
+              </div>
+              <p class="metric-label">Taux de Recyclage</p>
+              <p class="metric-desc">Produits reformatés/reconduits</p>
+            </div>
+
+            <div class="impact-card">
+              <div class="impact-metric">
+                <span class="metric-value">{{ platformStats.environmentalImpact.productsValidated }}</span>
+                <span class="metric-unit">✓</span>
+              </div>
+              <p class="metric-label">Produits Validés</p>
+              <p class="metric-desc">Vérifiés par l'équipe</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="quick-actions">
+          <h3>Actions Rapides</h3>
+          <div class="actions-grid">
+            <button class="action-btn" (click)="setTab('users')">
+              <span class="action-icon">👥</span>
+              <span>Gérer Utilisateurs</span>
+            </button>
+            <button class="action-btn" (click)="setTab('products')">
+              <span class="action-icon">📦</span>
+              <span>Modérer Produits</span>
+            </button>
+            <button class="action-btn" (click)="setTab('stats')">
+              <span class="action-icon">📈</span>
+              <span>Voir Rapports</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Users Management Tab -->
+    <ng-container *ngIf="currentTab === 'users'">
+      <div class="content-section">
+        <h2>Gestion des Utilisateurs</h2>
+        
+        <div class="filter-bar">
+          <input 
+            type="text" 
+            class="search-input" 
+            placeholder="Chercher par nom ou email..."
+            [(ngModel)]="searchQuery">
+          <select class="filter-select" [(ngModel)]="filterRole">
+            <option value="all">Tous les rôles</option>
+            <option value="Buyer">Acheteurs</option>
+            <option value="Seller">Vendeurs</option>
+            <option value="Admin">Administrateurs</option>
+          </select>
+        </div>
+
+        <div *ngIf="loading" class="text-center text-muted">
+          <p>Chargement des utilisateurs...</p>
+        </div>
+
+        <table class="users-table" *ngIf="!loading">
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Rôle</th>
+              <th>EcoScore</th>
+              <th>Points</th>
+              <th>Produits</th>
+              <th>Membre depuis</th>
+              <th>Statut</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let u of getFilteredUsers()">
+              <td>{{ u.firstName }} {{ u.lastName }}</td>
+              <td>{{ u.username }}</td>
+              <td>{{ u.email }}</td>
+              <td><span class="badge">{{ u.role }}</span></td>
+              <td>{{ u.ecoScore }}</td>
+              <td>{{ u.totalPoints }}</td>
+              <td>{{ u.productsCount }}</td>
+              <td>{{ u.createdAt | date:'dd/MM/yyyy' }}</td>
+              <td>
+                <select 
+                  class="status-select"
+                  [value]="u.status"
+                  (change)="changeUserStatus(u, $any($event.target).value)"
+                  [ngClass]="getStatusBadgeClass(u.status)">
+                  <option value="active">Actif</option>
+                  <option value="inactive">Inactif</option>
+                </select>
+              </td>
+              <td>
+                <button class="btn-delete" (click)="deleteUser(u.id)" title="Supprimer">
+                  🗑️
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div *ngIf="!loading && getFilteredUsers().length === 0" class="empty-state">
+          <p>Aucun utilisateur trouvé</p>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Products Management Tab -->
+    <ng-container *ngIf="currentTab === 'products'">
+      <div class="content-section">
+        <h2>Gestion des Produits</h2>
+        
+        <div *ngIf="loading" class="text-center text-muted">
+          <p>Chargement des produits...</p>
+        </div>
+
+        <table class="products-table" *ngIf="!loading && products.length > 0">
+          <thead>
+            <tr>
+              <th>Produit</th>
+              <th>Vendeur</th>
+              <th>Prix</th>
+              <th>Statut</th>
+              <th>Éco Score</th>
+              <th>Catégorie</th>
+              <th>Matériau</th>
+              <th>Ventes</th>
+              <th>Créé le</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let product of products">
+              <td>
+                <strong>{{ product.title }}</strong>
+              </td>
+              <td>{{ product.sellerName }}</td>
+              <td>{{ formatPriceWithCurrency(product.price, product.currency) }}</td>
+              <td>{{ product.status }}</td>
+              <td><span class="eco-badge">{{ product.ecoScore }}</span></td>
+              <td>{{ product.category }}</td>
+              <td>{{ product.material || 'N/A' }}</td>
+              <td>{{ product.salesCount }}</td>
+              <td>{{ product.createdAt | date:'dd/MM/yyyy' }}</td>
+              <td>
+                <button
+                  class="btn-sm"
+                  [ngClass]="isProductValidated(product) ? 'btn-primary' : 'btn-success'"
+                  [disabled]="isProductValidated(product)"
+                  (click)="approveProduct(product.id)">
+                  {{ isProductValidated(product) ? '✓ Validé' : '✓ Valider' }}
+                </button>
+                <button class="btn-sm btn-danger" (click)="rejectProduct(product.id)">
+                  🗑️ Supprimer définitivement
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div *ngIf="!loading && products.length === 0" class="empty-state">
+          <p>Aucun produit à modérer</p>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- Detailed Stats Tab -->
+    <ng-container *ngIf="currentTab === 'stats'">
+      <div class="content-section">
+        <h2>Statistiques Détaillées de la Plateforme</h2>
+        
+        <div class="stats-detail-grid">
+          <div class="detail-card">
+            <h3>Ventes Moyennes</h3>
+            <p class="detail-value">{{ platformStats.averageSalesPerProduct | number:'1.2-2' }}</p>
+            <p class="detail-desc">ventes par produit</p>
+          </div>
+
+          <div class="detail-card">
+            <h3>Revenus par devise</h3>
+            <p class="detail-value revenue-multi">{{ formatRevenueByCurrency() }}</p>
+            <p class="detail-desc">totaux plateforme</p>
+          </div>
+
+          <div class="detail-card">
+            <h3>Taux de Conversion</h3>
+            <p class="detail-value">{{ ((platformStats.totalTransactions / platformStats.totalUsers) * 100) | number:'1.1-1' }}%</p>
+            <p class="detail-desc">utilisateurs ayant acheté</p>
+          </div>
+        </div>
+
+        <div class="chart-section">
+          <h3>Activité Récente</h3>
+          <div class="chart-placeholder">
+            <p>📊 Graphique d'activité à venir</p>
+          </div>
+        </div>
+
+        <div class="reports-section">
+          <h3>Rapports & Exports</h3>
+          <div class="reports-buttons">
+            <button class="btn btn-primary">📥 Exporter Utilisateurs (CSV)</button>
+            <button class="btn btn-primary">📥 Exporter Produits (CSV)</button>
+            <button class="btn btn-primary">📥 Rapport Financier (PDF)</button>
+            <button class="btn btn-primary">📥 Impact Environnemental (PDF)</button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</div>

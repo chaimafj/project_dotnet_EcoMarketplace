@@ -1,0 +1,154 @@
+:host {
+  display: block;
+}
+
+.hero {
+  background:
+    radial-gradient(circle at 85% 18%, rgba(118, 231, 170, 0.25) 0%, transparent 40%),
+    linear-gradient(128deg, #0c3429 0%, #12513d 43%, #1f7a57 100%);
+  min-height: calc(100vh - 56px);
+  overflow: hidden;
+}
+
+.badge-pill {
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  color: #f9ffee;
+  padding: 8px 12px;
+}
+
+.quick-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.quick-chip {
+  background: rgba(255, 255, 255, 0.16);
+  color: #f0f7ef;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  padding: 8px 13px;
+  font-size: 0.88rem;
+}
+
+.hero-media {
+  position: relative;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px rgba(7, 25, 20, 0.45);
+  isolation: isolate;
+}
+
+.hero-image {
+  width: 100%;
+  min-height: 420px;
+  object-fit: cover;
+  filter: saturate(1.05) contrast(1.04);
+  transition: transform 700ms ease, filter 700ms ease;
+}
+
+.hero-media:hover .hero-image {
+  transform: scale(1.025);
+  filter: saturate(1.15) contrast(1.08);
+}
+
+.slider-controls {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+  padding: 0 12px;
+  z-index: 3;
+}
+
+.slide-arrow {
+  pointer-events: auto;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  background: rgba(15, 52, 40, 0.48);
+  color: #f8fff3;
+  font-size: 1.5rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 200ms ease, background 200ms ease;
+}
+
+.slide-arrow:hover {
+  transform: scale(1.06);
+  background: rgba(15, 52, 40, 0.72);
+}
+
+.slider-dots {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 4;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(255, 255, 255, 0.5);
+  transition: all 220ms ease;
+}
+
+.dot.active {
+  width: 24px;
+  background: #ffffff;
+}
+
+.floating-card {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.92);
+  color: #15372b;
+  border-radius: 14px;
+  padding: 10px 14px;
+  box-shadow: 0 16px 30px rgba(11, 44, 33, 0.22);
+  animation: cardFloat 4.8s ease-in-out infinite;
+}
+
+.card-a {
+  left: 14px;
+  bottom: 22px;
+}
+
+.card-b {
+  right: 14px;
+  top: 22px;
+  animation-delay: 1.4s;
+}
+
+@keyframes cardFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@media (max-width: 991px) {
+  .hero-image {
+    min-height: 320px;
+  }
+
+  .slide-arrow {
+    width: 36px;
+    height: 36px;
+    font-size: 1.25rem;
+  }
+}

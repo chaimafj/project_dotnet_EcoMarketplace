@@ -1,0 +1,38 @@
+:host {
+	display: block;
+}
+
+.modern-nav {
+	background: linear-gradient(90deg, #0f3d2e 0%, #165942 45%, #1f7a57 100%);
+	box-shadow: 0 8px 30px rgba(23, 57, 45, 0.22);
+}
+
+.brand-dot {
+	width: 12px;
+	height: 12px;
+	border-radius: 50%;
+	background: #f3f7d8;
+	box-shadow: 0 0 0 6px rgba(243, 247, 216, 0.15);
+}
+
+.nav-link {
+	font-weight: 600;
+}
+
+.nav-link:hover {
+	transform: translateY(-1px);
+}
+
+main {
+	animation: fadeMain 0.55s ease;
+}
+
+@keyframes fadeMain {
+	from {
+		opacity: 0;
+	}
+
+	to {
+		opacity: 1;
+	}
+}
