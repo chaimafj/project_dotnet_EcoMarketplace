@@ -50,10 +50,14 @@ export class SellerDashboardComponent implements OnInit {
     { label: 'État acceptable', value: 'Fair' },
     { label: 'Pour recyclage', value: 'ForRecycling' }
   ];
-  currencies = [
-    { label: 'Dinar Tunisien (DT)', value: 'DT' },
-    { label: 'Euro (€)', value: 'EUR' },
-    { label: 'Dollar américain ($)', value: 'USD' }
+  materials = [
+    { label: 'Plastique recycle', value: 'plastique recycle' },
+    { label: 'Plastique standard', value: 'plastique standard' },
+    { label: 'Coton biologique', value: 'coton biologique' },
+    { label: 'Bois certifie FSC', value: 'bois certifie fsc' },
+    { label: 'Bamboo', value: 'bamboo' },
+    { label: 'Materiau non recyclable', value: 'materiau non recyclable' },
+    { label: 'Autre (saisir manuellement)', value: '__custom__' }
   ];
 
   constructor(
@@ -67,12 +71,10 @@ export class SellerDashboardComponent implements OnInit {
       title: ['', [Validators.required, Validators.minLength(5)]],
       description: ['', [Validators.required, Validators.minLength(10)]],
       price: ['', [Validators.required, Validators.min(0.01)]],
-      currency: ['DT', Validators.required],
       category: ['', Validators.required],
       condition: ['', Validators.required],
       material: ['', Validators.required],
-      co2Saved: ['', Validators.min(0)],
-      recycledPercentage: ['', [Validators.min(0), Validators.max(100)]],
+      materialCustom: [''],
       image: ['']
     });
   }
@@ -144,6 +146,16 @@ export class SellerDashboardComponent implements OnInit {
     this.loading = true;
     const formValue = this.publishForm.value;
     const imageUrl = String(formValue.image || '').trim();
+    const selectedMaterial = String(formValue.material || '');
+    const customMaterial = String(formValue.materialCustom || '').trim();
+    const material = selectedMaterial === '__custom__' ? customMaterial : selectedMaterial;
+
+    if (!material) {
+      alert('Veuillez choisir un materiau ou saisir un materiau personnalise.');
+      this.loading = false;
+      return;
+    }
+
     const images = [
       ...this.productImagePreviews,
       ...(imageUrl ? [imageUrl] : [])
@@ -155,7 +167,7 @@ export class SellerDashboardComponent implements OnInit {
       title: formValue.title,
       description: formValue.description,
       price: parseFloat(formValue.price),
-      currency: formValue.currency,
+      currency: 'DT',
       condition: formValue.condition,   // déjà en anglais (enum value)
       category: formValue.category,    // déjà en anglais (enum value)
       images: images.length
@@ -164,11 +176,9 @@ export class SellerDashboardComponent implements OnInit {
       location: 'Non précisée',
       latitude: 0,
       longitude: 0,
-      material: formValue.material,
-      isRecycled: formValue.recycledPercentage > 0,
-      isSustainable: true,
-      carbonFootprint: formValue.co2Saved || 0,
-      recycledPercentage: formValue.recycledPercentage || 0
+      material,
+      isRecycled: undefined,
+      isSustainable: undefined
     };
 
     console.log('📦 Envoi du produit:', productRequest);
@@ -179,7 +189,7 @@ export class SellerDashboardComponent implements OnInit {
         console.log('✅ Produit créé avec succès:', createdProduct);
         this.loading = false;
         alert('Produit publié avec succès!');
-        this.publishForm.reset({ currency: 'DT' });
+        this.publishForm.reset();
         this.productImagePreviews = [];
         this.currentTab = 'manage';
         this.loadMyProducts(); // Récharger la liste
@@ -257,15 +267,17 @@ export class SellerDashboardComponent implements OnInit {
   }
 
   editProduct(product: Product): void {
+    const productMaterial = String(product.material || '').trim();
+    const materialExistsInList = this.materials.some((m) => m.value === productMaterial && m.value !== '__custom__');
+
     this.publishForm.patchValue({
       title: product.title,
       description: product.description,
       price: product.price,
       category: product.category,
       condition: product.condition,
-      material: product.material,
-      co2Saved: product.co2Saved,
-      recycledPercentage: product.recycledPercentage
+      material: materialExistsInList ? productMaterial : '__custom__',
+      materialCustom: materialExistsInList ? '' : productMaterial
     });
     this.currentTab = 'add';
   }
@@ -328,6 +340,72 @@ export class SellerDashboardComponent implements OnInit {
     return Math.round(total / this.products.length);
   }
 
+  get recyclableProductsCount(): number {
+    return this.products.filter(p => p.isRecycled).length;
+  }
+
+  get sustainableProductsCount(): number {
+    return this.products.filter(p => p.isSustainable).length;
+  }
+
+  get totalCarbonFootprint(): number {
+    return Math.round(this.products.reduce((sum, p) => sum + (p.carbonFootprint || 0), 0) * 10) / 10;
+  }
+
+  get ecoScoreLevel(): string {
+    const s = this.averageEcoScore;
+    if (s >= 80) return 'Excellent';
+    if (s >= 60) return 'Bon';
+    if (s >= 40) return 'Moyen';
+    return 'Faible';
+  }
+
+  get ecoScoreLevelClass(): string {
+    const s = this.averageEcoScore;
+    if (s >= 80) return 'excellent';
+    if (s >= 60) return 'good';
+    if (s >= 40) return 'medium';
+    return 'low';
+  }
+
+  get materialBreakdown(): { material: string; count: number; percentage: number }[] {
+    if (!this.products.length) return [];
+    const groups: Record<string, number> = {};
+    this.products.forEach(p => {
+      const mat = p.material || 'Autre';
+      groups[mat] = (groups[mat] || 0) + 1;
+    });
+    return Object.entries(groups)
+      .map(([material, count]) => ({
+        material,
+        count,
+        percentage: Math.round((count / this.products.length) * 100)
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 6);
+  }
+
+  get topEcoProducts(): { title: string; ecoScore: number; recycledPercentage: number; isRecycled: boolean }[] {
+    return [...this.products]
+      .sort((a, b) => b.ecoScore - a.ecoScore)
+      .slice(0, 6)
+      .map(p => ({
+        title: p.title,
+        ecoScore: p.ecoScore,
+        recycledPercentage: p.recycledPercentage || 0,
+        isRecycled: p.isRecycled || false
+      }));
+  }
+
+  get improvementTip(): string {
+    if (!this.products.length) return 'Ajoutez des produits pour voir vos statistiques écologiques.';
+    const s = this.averageEcoScore;
+    if (s >= 80) return 'Excellent ! Continuez à promouvoir vos produits éco-responsables et inspirez d\'autres vendeurs.';
+    if (s >= 60) return 'Bon score ! Augmentez le pourcentage de matériaux recyclés pour franchir le palier Excellent.';
+    if (s >= 40) return 'Score moyen. Privilégiez des produits reconditionnés et documentez leur durabilité dans les fiches.';
+    return 'Score faible. Enrichissez les données écologiques de vos produits et favorisez les articles recyclés.';
+  }
+
   get sellerName(): string {
     const first = this.user?.firstName || '';
     const last = this.user?.lastName || '';
@@ -339,30 +417,8 @@ export class SellerDashboardComponent implements OnInit {
     return this.user?.profilePictureUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(this.sellerName)}&background=1a7c50&color=fff&size=128`;
   }
 
-  getCurrencySymbol(currency?: string): string {
-    const curr = (currency || 'DT').toUpperCase();
-    switch (curr) {
-      case 'EUR':
-        return '€';
-      case 'USD':
-        return '$';
-      case 'DT':
-      default:
-        return 'DT';
-    }
-  }
-
   formatPriceWithCurrency(price: number, currency?: string): string {
-    const symbol = this.getCurrencySymbol(currency);
-    const curr = (currency || 'DT').toUpperCase();
-    
-    if (curr === 'USD') {
-      return `${symbol}${price.toFixed(2)}`;
-    } else if (curr === 'EUR') {
-      return `${price.toFixed(2)}${symbol}`;
-    } else {
-      return `${price.toFixed(2)} ${symbol}`;
-    }
+    return `${Number(price || 0).toFixed(2)} DT`;
   }
 
   private refreshSalesData(): void {
@@ -392,12 +448,8 @@ export class SellerDashboardComponent implements OnInit {
   }
 
   private buildCurrencyTotals(sales: SellerSale[]): Record<string, number> {
-    return sales.reduce((acc, sale) => {
-      const currency = (sale.currency || 'DT').toUpperCase();
-      const amount = Number(sale.totalPrice || 0);
-      acc[currency] = (acc[currency] || 0) + amount;
-      return acc;
-    }, {} as Record<string, number>);
+    const total = sales.reduce((sum, sale) => sum + Number(sale.totalPrice || 0), 0);
+    return { DT: total };
   }
 
   private divideCurrencyTotals(totals: Record<string, number>, divisor: number): Record<string, number> {
@@ -409,12 +461,7 @@ export class SellerDashboardComponent implements OnInit {
   }
 
   private formatCurrencyTotals(totals: Record<string, number>): string {
-    const order = ['DT', 'EUR', 'USD'];
-    const chunks = order
-      .filter((currency) => typeof totals[currency] === 'number' && totals[currency] > 0)
-      .map((currency) => this.formatPriceWithCurrency(totals[currency], currency));
-
-    return chunks.length ? chunks.join(' | ') : this.formatPriceWithCurrency(0, 'DT');
+    return this.formatPriceWithCurrency(totals['DT'] ?? 0, 'DT');
   }
 
   private getMonthLabel(monthIndex: number): string {

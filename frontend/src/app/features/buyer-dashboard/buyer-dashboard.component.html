@@ -2,7 +2,11 @@
   <div class="dashboard-header">
     <div class="header-content">
       <h1>Tableau de bord Acheteur</h1>
-      <p class="subtitle">Bienvenue, {{ user?.firstName }}! 👋</p>
+      <p class="subtitle">Suivez vos commandes, votre progression éco et vos recommandations.</p>
+      <div class="header-identity">
+        <span class="identity-name">{{ buyerName }}</span>
+        <span class="identity-level">{{ ecoLevel }}</span>
+      </div>
     </div>
     <div class="header-stats">
       <div class="stat-card">
@@ -17,47 +21,48 @@
         <span class="stat-value">{{ orders.length }}</span>
         <span class="stat-label">Commandes</span>
       </div>
+      <div class="stat-card">
+        <span class="stat-value">{{ formatPriceDT(totalSpent) }}</span>
+        <span class="stat-label">Dépenses totales</span>
+      </div>
     </div>
   </div>
 
-  <!-- Navigation Tabs -->
   <div class="dashboard-tabs">
     <button 
       class="tab-btn"
       [class.active]="currentTab === 'profile'"
       (click)="setTab('profile')">
-      👤 Mon Profil
+      Mon Profil
     </button>
     <button 
       class="tab-btn"
       [class.active]="currentTab === 'orders'"
       (click)="setTab('orders')">
-      📦 Mes Commandes
+      Mes Commandes
     </button>
     <button 
       class="tab-btn"
       [class.active]="currentTab === 'écopoints'"
       (click)="setTab('écopoints')">
-      ⭐ ÉcoPoints & Badges
+      ÉcoPoints & Badges
     </button>
     <button 
       class="tab-btn"
       [class.active]="currentTab === 'recommended'"
       (click)="setTab('recommended')">
-      💡 Produits Recommandés
+      Produits Recommandés
     </button>
   </div>
 
-  <!-- Tab Content -->
   <div class="tab-content">
-    <!-- Mon Profil Tab -->
     <ng-container *ngIf="currentTab === 'profile'">
       <div class="content-section">
         <h2>Mon Profil</h2>
-        <div class="profile-grid">
+        <div class="profile-grid profile-grid-main">
           <div class="profile-card">
             <label>Nom</label>
-            <p>{{ user?.firstName }} {{ user?.lastName }}</p>
+            <p>{{ buyerName }}</p>
           </div>
           <div class="profile-card">
             <label>Email</label>
@@ -68,8 +73,8 @@
             <p><span class="badge badge-primary">Acheteur</span></p>
           </div>
           <div class="profile-card">
-            <label>Membre depuis</label>
-            <p>Mars 2026</p>
+            <label>Niveau actuel</label>
+            <p>{{ ecoLevel }}</p>
           </div>
           <div class="profile-card">
             <label>Score Écologique</label>
@@ -80,11 +85,29 @@
             <p>{{ totalPoints }} pts</p>
           </div>
         </div>
-        <button class="btn btn-secondary mt-4">✏️ Modifier Mon Profil</button>
+
+        <div class="profile-grid profile-grid-secondary">
+          <div class="profile-card emphasis-card">
+            <label>Commandes complétées</label>
+            <p>{{ completedOrdersCount }}</p>
+          </div>
+          <div class="profile-card emphasis-card">
+            <label>Dépense moyenne</label>
+            <p>{{ formatPriceDT(averageOrderValue) }}</p>
+          </div>
+          <div class="profile-card progress-card">
+            <label>Progression éco</label>
+            <div class="eco-progress-bar">
+              <div class="eco-progress-fill" [style.width.%]="ecoProgress"></div>
+            </div>
+            <p>{{ ecoProgress }}% vers le niveau maximal</p>
+          </div>
+        </div>
+
+        <a class="btn btn-secondary mt-4" routerLink="/profile">Modifier mon profil</a>
       </div>
     </ng-container>
 
-    <!-- Mes Commandes Tab -->
     <ng-container *ngIf="currentTab === 'orders'">
       <div class="content-section">
         <h2>Mes Commandes</h2>
@@ -101,7 +124,7 @@
               <tr>
                 <th>Produit</th>
                 <th>Quantité</th>
-                <th>Prix</th>
+                <th>Prix (DT)</th>
                 <th>Date</th>
                 <th>Statut</th>
               </tr>
@@ -110,7 +133,7 @@
               <tr *ngFor="let order of orders">
                 <td><strong>{{ order.productName }}</strong></td>
                 <td>{{ order.quantity }}</td>
-                <td>{{ order.totalPrice }}€</td>
+                <td>{{ formatPriceDT(order.totalPrice) }}</td>
                 <td>{{ order.purchasedAt | date: 'dd/MM/yyyy' }}</td>
                 <td>
                   <span class="badge" [ngClass]="getStatusBadgeClass(order.status)">
@@ -124,11 +147,10 @@
       </div>
     </ng-container>
 
-    <!-- ÉcoPoints & Badges Tab -->
     <ng-container *ngIf="currentTab === 'écopoints'">
       <div class="content-section">
         <h2>ÉcoPoints & Badges</h2>
-        
+
         <div class="écopoints-summary">
           <div class="ecopoint-card">
             <h3>Vos ÉcoPoints</h3>
@@ -136,40 +158,58 @@
               <span class="points-number">{{ totalPoints }}</span>
               <span class="points-label">points écologiques</span>
             </div>
-            <p class="text-muted">Gagnez des points à chaque achat responsable!</p>
+            <p class="text-muted">Chaque achat responsable contribue à votre progression.</p>
           </div>
-          
+
           <div class="ecopoint-card">
             <h3>Score Écologique</h3>
             <div class="eco-score-bar">
               <div class="score-fill" [style.width.%]="ecoScore"></div>
             </div>
-            <p>{{ ecoScore }}/100 - Vous êtes un acheteur conscient! 🌱</p>
+            <p>{{ ecoScore }}/100</p>
+          </div>
+
+          <div class="ecopoint-card next-goal-card" *ngIf="nextGoal as goal">
+            <h3>Prochain objectif</h3>
+            <div class="goal-value">{{ goal.current }}/{{ goal.threshold }}</div>
+            <p>{{ goal.title }}</p>
+            <small>{{ goal.description }}</small>
           </div>
         </div>
 
         <div class="badges-section">
-          <h3>Vos Badges</h3>
+          <h3>Badges débloqués</h3>
+          <div class="empty-state compact" *ngIf="unlockedBadges.length === 0">
+            <p>Aucun badge débloqué pour le moment.</p>
+          </div>
           <div class="badges-grid">
-            <div class="badge-item" *ngFor="let badge of badges">
-              <div class="badge-icon">{{ badge.split(' ')[0] }}</div>
-              <div class="badge-text">{{ badge.split(' ').slice(1).join(' ') }}</div>
+            <div class="badge-item unlocked" *ngFor="let badge of unlockedBadges">
+              <div class="badge-title">{{ badge.title }}</div>
+              <div class="badge-text">{{ badge.description }}</div>
+              <div class="badge-state">Débloqué</div>
             </div>
           </div>
         </div>
 
         <div class="achievement-info">
-          <h3>Prochains accomplissements</h3>
-          <ul>
-            <li>✓ Atteindre 100 points → Débloquer "Écolo Confirmé"</li>
-            <li>✓ 5 achats → Débloquer "Acheteur Loyal"</li>
-            <li>✓ 200 points → Débloquer "VIP"</li>
-          </ul>
+          <h3>Badges à venir</h3>
+          <div class="milestones-grid">
+            <div class="milestone-card" *ngFor="let badge of upcomingBadges">
+              <div class="milestone-head">
+                <strong>{{ badge.title }}</strong>
+                <span>{{ badge.current }}/{{ badge.threshold }}</span>
+              </div>
+              <p>{{ badge.description }}</p>
+              <div class="milestone-bar">
+                <div class="milestone-fill" [style.width.%]="badge.progress"></div>
+              </div>
+              <small>{{ badge.threshold - badge.current > 0 ? (badge.threshold - badge.current) : 0 }} {{ badge.unit }} restants</small>
+            </div>
+          </div>
         </div>
       </div>
     </ng-container>
 
-    <!-- Produits Recommandés Tab -->
     <ng-container *ngIf="currentTab === 'recommended'">
       <div class="content-section">
         <h2>Produits Recommandés</h2>
@@ -201,7 +241,7 @@
               <h4>{{ product.title }}</h4>
               <p class="description">{{ product.description | slice:0:60 }}...</p>
               <div class="product-meta">
-                <span class="price"><strong>{{ product.price }}€</strong></span>
+                <span class="price"><strong>{{ formatPriceDT(product.price) }}</strong></span>
                 <span class="seller">par {{ product.sellerName }}</span>
               </div>
               <div class="d-flex gap-2 mt-2">

@@ -238,15 +238,13 @@ export class AdminDashboardComponent implements OnInit {
   formatRevenueByCurrency(): string {
     if (!this.platformStats.revenueByCurrency.length) return '0.00 DT';
 
-    return this.platformStats.revenueByCurrency
-      .map((item) => this.formatPriceWithCurrency(item.amount, item.currency))
-      .join(' | ');
+    const total = this.platformStats.revenueByCurrency
+      .reduce((sum, item) => sum + Number(item.amount || 0), 0);
+
+    return this.formatPriceWithCurrency(total, 'DT');
   }
 
   formatPriceWithCurrency(amount: number, currency?: string): string {
-    const curr = (currency || 'DT').toUpperCase();
-    if (curr === 'USD') return `$${amount.toFixed(2)}`;
-    if (curr === 'EUR') return `${amount.toFixed(2)}€`;
-    return `${amount.toFixed(2)} DT`;
+    return `${Number(amount || 0).toFixed(2)} DT`;
   }
 }

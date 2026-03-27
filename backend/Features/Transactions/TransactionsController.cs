@@ -5,6 +5,7 @@ using EcoMarketplace.API.DTOs;
 using EcoMarketplace.API.Data;
 using EcoMarketplace.API.Models;
 using Microsoft.EntityFrameworkCore;
+using EcoMarketplace.API.Services;
 
 namespace EcoMarketplace.API.Controllers
 {
@@ -14,13 +15,16 @@ namespace EcoMarketplace.API.Controllers
     {
         private readonly IProductRepository _productRepository;
         private readonly ApplicationDbContext _dbContext;
+        private readonly IEcoScoreService _ecoScoreService;
 
         public TransactionsController(
             IProductRepository productRepository,
-            ApplicationDbContext dbContext)
+            ApplicationDbContext dbContext,
+            IEcoScoreService ecoScoreService)
         {
             _productRepository = productRepository;
             _dbContext = dbContext;
+            _ecoScoreService = ecoScoreService;
         }
 
         [HttpPost("purchase")]
@@ -73,6 +77,29 @@ namespace EcoMarketplace.API.Controllers
             };
 
             await _dbContext.Transactions.AddAsync(transaction);
+
+            // Calculate eco score and award eco points to buyer
+            var ecoScoreBreakdown = _ecoScoreService.Calculate(product);
+            var ecoPointsAwarded = (ecoScoreBreakdown.FinalScore / 10) * dto.Quantity; // Award points based on score and quantity
+            buyer.TotalPoints += ecoPointsAwarded;
+
+            // Recalculate buyer's overall eco score as average of all purchased products
+            var buyerTransactions = await _dbContext.Transactions
+                .Where(t => t.BuyerId == dto.BuyerId && t.TransactionType == TransactionType.Purchase)
+                .Include(t => t.Product)
+                .ToListAsync();
+
+            if (buyerTransactions.Any())
+            {
+                var totalEcoScore = 0;
+                foreach (var trans in buyerTransactions)
+                {
+                    var score = _ecoScoreService.Calculate(trans.Product);
+                    totalEcoScore += score.FinalScore;
+                }
+                buyer.EcoScore = (int)Math.Round((double)totalEcoScore / buyerTransactions.Count);
+            }
+
             await _dbContext.SaveChangesAsync();
 
             var result = new PurchaseResultDto(

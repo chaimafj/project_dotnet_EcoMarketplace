@@ -80,7 +80,7 @@
             </div>
 
             <div class="form-group">
-              <label for="price">Prix *</label>
+              <label for="price">Prix (DT) *</label>
               <div class="price-currency-row">
                 <input 
                   type="number" 
@@ -89,9 +89,7 @@
                   formControlName="price"
                   placeholder="0.00"
                   step="0.01">
-                <select id="currency" class="form-input currency-select" formControlName="currency">
-                  <option *ngFor="let curr of currencies" [value]="curr.value">{{ curr.label }}</option>
-                </select>
+                <span class="form-input currency-select">DT</span>
               </div>
               <small class="form-help" *ngIf="publishForm.get('price')?.hasError('required')">
                 Le prix est obligatoire
@@ -119,12 +117,23 @@
 
           <div class="form-group">
             <label for="material">Matériau principal *</label>
-            <input 
-              type="text" 
-              id="material"
+            <select id="material" class="form-input" formControlName="material">
+              <option value="">Selectionner un materiau</option>
+              <option *ngFor="let material of materials" [value]="material.value">{{ material.label }}</option>
+            </select>
+            <small class="form-help" *ngIf="publishForm.get('material')?.hasError('required')">
+              Le materiau est obligatoire
+            </small>
+          </div>
+
+          <div class="form-group" *ngIf="publishForm.get('material')?.value === '__custom__'">
+            <label for="materialCustom">Précisez le matériau *</label>
+            <input
+              type="text"
+              id="materialCustom"
               class="form-input"
-              formControlName="material"
-              placeholder="Ex: Plastique recyclé, Aluminium, Acier, etc.">
+              formControlName="materialCustom"
+              placeholder="Ex: Aluminium, Acier, Verre...">
           </div>
 
           <div class="form-group">
@@ -140,34 +149,7 @@
             </small>
           </div>
 
-          <div class="eco-data-section">
-            <h3> Données écologiques (optionnelles)</h3>
-            
-            <div class="form-row">
-              <div class="form-group">
-                <label for="co2Saved">CO2 épargné (kg)</label>
-                <input 
-                  type="number" 
-                  id="co2Saved"
-                  class="form-input"
-                  formControlName="co2Saved"
-                  placeholder="0"
-                  min="0">
-              </div>
-
-              <div class="form-group">
-                <label for="recycledPercentage">% Produit recyclé</label>
-                <input 
-                  type="number" 
-                  id="recycledPercentage"
-                  class="form-input"
-                  formControlName="recycledPercentage"
-                  placeholder="0"
-                  min="0"
-                  max="100">
-              </div>
-            </div>
-          </div>
+          <p class="text-muted">Le score éco est calculé automatiquement selon le matériau, la catégorie et l'état du produit.</p>
 
           <div class="form-group">
             <label>Photos réelles du produit (1 à 8)</label>
@@ -244,8 +226,8 @@
               </div>
 
               <div class="eco-info">
-                <span *ngIf="product.co2Saved">💨 {{ product.co2Saved }}kg CO2</span>
-                <span *ngIf="product.recycledPercentage">♻️ {{ product.recycledPercentage }}%</span>
+                <span *ngIf="product.co2Saved"> {{ product.co2Saved }}kg CO2</span>
+                <span *ngIf="product.recycledPercentage"> {{ product.recycledPercentage }}%</span>
               </div>
 
               <div class="action-buttons">
@@ -352,83 +334,110 @@
     <!-- Statistiques d'impact environnemental -->
     <ng-container *ngIf="currentTab === 'environmental'">
       <div class="content-section">
-        <h2>Statistiques d'impact environnemental</h2>
-        
+        <div class="env-header">
+          <h2>🌍 Impact environnemental</h2>
+          <p class="env-subtitle">Suivez et améliorez l'empreinte écologique de votre catalogue</p>
+        </div>
+
+        <!-- KPI Cards -->
         <div class="environmental-summary">
           <div class="env-card">
+            <div class="env-card-icon"></div>
             <div class="env-metric">
-              <span class="metric-value">{{ totalCO2Saved }}</span>
-              <span class="metric-unit">kg</span>
+              <span class="metric-value">{{ recyclableProductsCount }}</span>
+              <span class="metric-unit">/ {{ totalProducts }}</span>
             </div>
-            <p class="metric-label">CO2 Épargné</p>
-            <p class="metric-desc">Équivalent à {{ (totalCO2Saved / 0.21) | number:'1.0-0' }} km en voiture</p>
+            <p class="metric-label">Produits Recyclés</p>
+            <p class="metric-desc">{{ totalProducts > 0 ? ((recyclableProductsCount / totalProducts) * 100 | number:'1.0-0') : 0 }}% de votre catalogue</p>
           </div>
 
           <div class="env-card">
+            <div class="env-card-icon"></div>
             <div class="env-metric">
               <span class="metric-value">{{ averageRecycledPercentage }}</span>
               <span class="metric-unit">%</span>
             </div>
-            <p class="metric-label">Taux de Recyclage</p>
-            <p class="metric-desc">Moyenne de vos produits</p>
+            <p class="metric-label">Taux de Recyclage Moyen</p>
+            <p class="metric-desc">Matériaux recyclés par produit</p>
           </div>
 
           <div class="env-card">
+            <div class="env-card-icon"></div>
             <div class="env-metric">
-              <span class="metric-value">{{ totalProducts }}</span>
-              <span class="metric-unit">📦</span>
+              <span class="metric-value">{{ sustainableProductsCount }}</span>
+              <span class="metric-unit">pcs</span>
             </div>
             <p class="metric-label">Produits Durables</p>
-            <p class="metric-desc">Contribuant à l'économie circulaire</p>
+            <p class="metric-desc">Labellisés éco-responsables</p>
           </div>
 
           <div class="env-card">
+            <div class="env-card-icon"></div>
             <div class="env-metric">
               <span class="metric-value">{{ averageEcoScore }}</span>
               <span class="metric-unit">pts</span>
             </div>
             <p class="metric-label">EcoScore Moyen</p>
-            <p class="metric-desc">Qualité écologique de vos articles</p>
+            <p class="metric-desc">Niveau : <strong>{{ ecoScoreLevel }}</strong></p>
           </div>
         </div>
 
-        <div class="environmental-details">
-          <h3>Votre contribution à la durabilité</h3>
-          <div class="contribution-list">
-            <div class="contribution-item">
-              <span class="item-icon">🌱</span>
-              <div class="item-content">
-                <h4>Économie Circulaire</h4>
-                <p>Vous participez activement à la réduction des déchets en offrant une seconde vie aux produits.</p>
-              </div>
+        <!-- EcoScore Gauge -->
+        <div class="eco-score-section">
+          <div class="eco-score-header">
+            <h3>📊 Niveau EcoScore global</h3>
+            <span class="level-badge" [ngClass]="ecoScoreLevelClass">{{ ecoScoreLevel }}</span>
+          </div>
+          <div class="eco-score-bar-wrapper">
+            <div class="eco-score-bar">
+              <div class="eco-score-fill" [style.width.%]="averageEcoScore" [ngClass]="ecoScoreLevelClass"></div>
             </div>
+            <span class="eco-score-value">{{ averageEcoScore }}/100</span>
+          </div>
+          <div class="score-thresholds">
+            <span class="threshold low">0 — Faible</span>
+            <span class="threshold medium">40 — Moyen</span>
+            <span class="threshold good">60 — Bon</span>
+            <span class="threshold excellent">80 — Excellent</span>
+          </div>
+        </div>
 
-            <div class="contribution-item">
-              <span class="item-icon">💚</span>
-              <div class="item-content">
-                <h4>Réduction du Carbone</h4>
-                <p>Vos produits durables réduisent les émissions de carbone par rapport à la production neuve.</p>
-              </div>
-            </div>
-
-            <div class="contribution-item">
-              <span class="item-icon">♻️</span>
-              <div class="item-content">
-                <h4>Ressources Conservées</h4>
-                <p>Chaque produit reconditionné économise de précieuses ressources naturelles.</p>
-              </div>
+        <!-- Materials Breakdown -->
+        <div class="materials-section" *ngIf="materialBreakdown.length > 0">
+          <h3>🔩 Répartition par matériau</h3>
+          <div class="materials-grid">
+            <div class="material-pill" *ngFor="let m of materialBreakdown">
+              <span class="material-name">{{ m.material }}</span>
+              <span class="material-bar-wrap">
+                <span class="material-bar" [style.width.%]="m.percentage"></span>
+              </span>
+              <span class="material-stat">{{ m.count }} produit{{ m.count > 1 ? 's' : '' }} ({{ m.percentage }}%)</span>
             </div>
           </div>
         </div>
 
-        <div class="eco-tips">
-          <h3>💡 Conseils pour améliorer votre impact</h3>
-          <ul>
-            <li>Progressez vers des produits contenant plus de matériaux recyclés (>50%)</li>
-            <li>Documentez précisément les données écologiques de vos produits</li>
-            <li>Privilégiez les articles haute durabilité pour un meilleur EcoScore</li>
-            <li>Informez les acheteurs sur l'impact environnemental de leur achat</li>
-          </ul>
+        <!-- Top Eco Products -->
+        <div class="top-products-section" *ngIf="topEcoProducts.length > 0">
+          <h3>🏆 Vos meilleurs articles écologiques</h3>
+          <div class="products-eco-list">
+            <div class="eco-product-row" *ngFor="let p of topEcoProducts; let i = index">
+              <span class="rank">#{{ i + 1 }}</span>
+              <span class="product-title" [title]="p.title">{{ p.title }}</span>
+              <div class="product-eco-bar">
+                <div class="product-eco-fill" [style.width.%]="p.ecoScore"
+                  [ngClass]="p.ecoScore >= 80 ? 'excellent' : p.ecoScore >= 60 ? 'good' : p.ecoScore >= 40 ? 'medium' : 'low'">
+                </div>
+              </div>
+              <span class="product-score">{{ p.ecoScore }}/100</span>
+              <span class="product-recycled-badge" *ngIf="p.isRecycled"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dynamic Tip -->
+        <div class="eco-tip-dynamic">
+          <span class="tip-icon"></span>
+          <p>{{ improvementTip }}</p>
         </div>
       </div>
     </ng-container>

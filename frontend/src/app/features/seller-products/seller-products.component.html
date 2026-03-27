@@ -61,7 +61,7 @@
       </div>
       <div class="col-md-4">
         <div class="metric-card">
-          <div class="metric-value">{{ portfolioValue | currency:'EUR':'symbol':'1.0-0' }}</div>
+          <div class="metric-value">{{ formatPriceWithCurrency(portfolioValue) }}</div>
           <div class="metric-label">Valeur du portfolio</div>
         </div>
       </div>

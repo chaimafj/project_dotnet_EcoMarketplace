@@ -46,9 +46,9 @@ namespace EcoMarketplace.API.Helpers.DTOs
         public double Latitude { get; set; }
         public double Longitude { get; set; }
         public string Material { get; set; }
-        public bool IsRecycled { get; set; }
-        public bool IsSustainable { get; set; }
-        public double CarbonFootprint { get; set; }
-        public int RecycledPercentage { get; set; }
+        public bool? IsRecycled { get; set; }
+        public bool? IsSustainable { get; set; }
+        public double? CarbonFootprint { get; set; }
+        public int? RecycledPercentage { get; set; }
     }
 }

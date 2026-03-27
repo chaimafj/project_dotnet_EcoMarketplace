@@ -49,10 +49,10 @@ export interface CreateProductRequest {
   latitude: number;
   longitude: number;
   material: string;
-  isRecycled: boolean;
-  isSustainable: boolean;
-  carbonFootprint: number;
-  recycledPercentage: number;
+  isRecycled?: boolean;
+  isSustainable?: boolean;
+  carbonFootprint?: number;
+  recycledPercentage?: number;
 }
 
 @Injectable({

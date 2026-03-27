@@ -247,9 +247,9 @@
           </div>
           <div class="row g-3">
             <div class="col-md-4">
-              <label class="form-label fw-semibold">Prix (€) <span class="text-danger">*</span></label>
+              <label class="form-label fw-semibold">Prix (DT) <span class="text-danger">*</span></label>
               <div class="input-with-icon">
-                <span class="input-prefix">€</span>
+                <span class="input-prefix">DT</span>
                 <input class="form-control modern-input ps-5" type="number" formControlName="price" placeholder="0.00">
               </div>
             </div>
@@ -429,7 +429,7 @@
                   {{ product.location }}
                 </p>
               </div>
-              <div class="pdc-price">{{ product.price | currency:'EUR':'symbol':'1.2-2' }}</div>
+              <div class="pdc-price">{{ product.price | number:'1.2-2' }} DT</div>
             </div>
 
             <p class="pdc-description">{{ product.description }}</p>

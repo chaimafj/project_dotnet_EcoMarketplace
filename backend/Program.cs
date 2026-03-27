@@ -62,6 +62,57 @@ using (var scope = app.Services.CreateScope())
         ADD COLUMN IF NOT EXISTS ""ShippingCity"" text NULL,
         ADD COLUMN IF NOT EXISTS ""ShippingPostalCode"" text NULL;");
 
+    // Cleanup: hide demo/default products and products from specific demo sellers.
+    var sellerUsernamesToCleanup = new[] { "sellerflow", "seller", "testseller" };
+    var defaultProductTitlesToCleanup = new[]
+    {
+        "Smartphone reconditionne",
+        "Smartphone reconditionné",
+        "T-shirt en coton bio",
+        "Table en bois massif"
+    };
+
+    var normalizedUsernames = sellerUsernamesToCleanup
+        .Select(u => u.Trim().ToLowerInvariant())
+        .ToHashSet();
+
+    var normalizedTitles = defaultProductTitlesToCleanup
+        .Select(t => t.Trim().ToLowerInvariant())
+        .ToHashSet();
+
+    var productIdsFromSellerCleanup = await dbContext.Products
+        .Include(p => p.Seller)
+        .Where(p => p.Status != ProductStatus.Removed)
+        .Where(p => p.Seller != null && normalizedUsernames.Contains(p.Seller.Username.ToLower()))
+        .Select(p => p.Id)
+        .ToListAsync();
+
+    var productIdsFromDefaultTitles = await dbContext.Products
+        .Where(p => p.Status != ProductStatus.Removed)
+        .Where(p => normalizedTitles.Contains(p.Title.ToLower()))
+        .Select(p => p.Id)
+        .ToListAsync();
+
+    var productIdsToHide = productIdsFromSellerCleanup
+        .Concat(productIdsFromDefaultTitles)
+        .Distinct()
+        .ToList();
+
+    if (productIdsToHide.Count > 0)
+    {
+        var productsToHide = await dbContext.Products
+            .Where(p => productIdsToHide.Contains(p.Id))
+            .ToListAsync();
+
+        foreach (var product in productsToHide)
+        {
+            product.Status = ProductStatus.Removed;
+            product.UpdatedAt = DateTime.UtcNow;
+        }
+
+        await dbContext.SaveChangesAsync();
+    }
+
     if (app.Environment.IsDevelopment())
     {
         var adminUser = dbContext.Users.FirstOrDefault(u => u.Email == "admin@ecomarketplace.local" || u.Username == "admin");

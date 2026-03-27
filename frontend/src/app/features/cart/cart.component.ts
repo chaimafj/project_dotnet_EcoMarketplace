@@ -6,6 +6,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { AuthService } from '../../Services/auth.service';
 import { CartItem, CartService } from '../../Services/cart.service';
 import { TransactionService } from '../../Services/transaction.service';
+import { environment } from '../../environments/environment';
 import { finalize, timeout } from 'rxjs/operators';
 
 @Component({
@@ -38,13 +39,24 @@ export class CartComponent implements OnInit {
       address: ['', [Validators.required, Validators.minLength(5)]],
       city: ['', [Validators.required, Validators.minLength(2)]],
       postalCode: ['', [Validators.required, Validators.minLength(4)]],
-      paymentMethod: ['Carte', Validators.required]
+      paymentMethod: ['CashOnDelivery', Validators.required],
+      cardNumber: [''],
+      cardHolder: [''],
+      expiryMonth: [''],
+      expiryYear: [''],
+      cvv: ['']
     });
   }
 
   ngOnInit(): void {
     this.loadCart();
     this.prefillOrderForm();
+    this.updatePaymentFieldsValidators(this.orderForm.get('paymentMethod')?.value);
+
+    this.orderForm.get('paymentMethod')?.valueChanges.subscribe((method) => {
+      this.updatePaymentFieldsValidators(method);
+    });
+
     this.orderForm.valueChanges.subscribe(() => this.saveCheckoutDraft());
   }
 
@@ -68,7 +80,7 @@ export class CartComponent implements OnInit {
             address: draft?.address || '',
             city: draft?.city || '',
             postalCode: draft?.postalCode || '',
-            paymentMethod: draft?.paymentMethod || 'Carte'
+            paymentMethod: draft?.paymentMethod || 'CashOnDelivery'
           }, { emitEvent: false });
         } catch {
           // Ignore corrupted draft
@@ -85,10 +97,37 @@ export class CartComponent implements OnInit {
       address: this.orderForm.get('address')?.value || '',
       city: this.orderForm.get('city')?.value || '',
       postalCode: this.orderForm.get('postalCode')?.value || '',
-      paymentMethod: this.orderForm.get('paymentMethod')?.value || 'Carte'
+      paymentMethod: this.orderForm.get('paymentMethod')?.value || 'CashOnDelivery'
     };
 
     localStorage.setItem(this.checkoutDraftKey, JSON.stringify(draft));
+  }
+
+  showCardPaymentFields(): boolean {
+    const paymentMethod = this.orderForm.get('paymentMethod')?.value;
+    return paymentMethod !== 'CashOnDelivery';
+  }
+
+  private updatePaymentFieldsValidators(paymentMethod: string | null): void {
+    const cardFields = ['cardNumber', 'cardHolder', 'expiryMonth', 'expiryYear', 'cvv'];
+    const needsCard = paymentMethod !== 'CashOnDelivery';
+
+    if (needsCard) {
+      this.orderForm.get('cardNumber')?.setValidators([Validators.required, Validators.pattern(/^\d{8,19}$/)]);
+      this.orderForm.get('cardHolder')?.setValidators([Validators.required, Validators.minLength(3)]);
+      this.orderForm.get('expiryMonth')?.setValidators([Validators.required, Validators.pattern(/^(0[1-9]|1[0-2])$/)]);
+      this.orderForm.get('expiryYear')?.setValidators([Validators.required, Validators.pattern(/^\d{2}$/)]);
+      this.orderForm.get('cvv')?.setValidators([Validators.required, Validators.pattern(/^\d{3,4}$/)]);
+    } else {
+      cardFields.forEach((field) => {
+        this.orderForm.get(field)?.clearValidators();
+        this.orderForm.get(field)?.setValue('', { emitEvent: false });
+      });
+    }
+
+    cardFields.forEach((field) => {
+      this.orderForm.get(field)?.updateValueAndValidity({ emitEvent: false });
+    });
   }
 
   loadCart(): void {
@@ -140,7 +179,7 @@ export class CartComponent implements OnInit {
       return;
     }
 
-    const confirmed = window.confirm(`Confirmer la commande de ${this.items.length} produit(s) pour un total de ${this.total.toFixed(2)} ?`);
+    const confirmed = window.confirm(`Confirmer la commande de ${this.items.length} produit(s) pour un total de ${this.formatPriceDT(this.total)} ?`);
     if (!confirmed) {
       return;
     }
@@ -153,7 +192,7 @@ export class CartComponent implements OnInit {
         buyerId: currentUser.id,
         productId: item.productId,
         quantity: item.quantity,
-        paymentMethod: this.orderForm.get('paymentMethod')?.value || 'Carte',
+        paymentMethod: this.orderForm.get('paymentMethod')?.value || 'CashOnDelivery',
         fullName: this.orderForm.get('fullName')?.value || '',
         email: this.orderForm.get('email')?.value || '',
         phone: this.orderForm.get('phone')?.value || '',
@@ -177,7 +216,12 @@ export class CartComponent implements OnInit {
           address: '',
           city: '',
           postalCode: '',
-          paymentMethod: 'Carte'
+          paymentMethod: 'CashOnDelivery',
+          cardNumber: '',
+          cardHolder: '',
+          expiryMonth: '',
+          expiryYear: '',
+          cvv: ''
         });
         if (typeof window !== 'undefined') {
           localStorage.removeItem(this.checkoutDraftKey);
@@ -192,7 +236,7 @@ export class CartComponent implements OnInit {
         }
 
         if (error?.status === 0) {
-          this.message = 'Serveur indisponible. Démarrez l\'API backend sur http://localhost:5201 puis réessayez.';
+          this.message = `Serveur indisponible. Démarrez l'API backend sur ${environment.apiUrl.replace('/api', '')} puis réessayez.`;
           return;
         }
 
@@ -229,5 +273,9 @@ export class CartComponent implements OnInit {
 
   get total(): number {
     return this.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  }
+
+  formatPriceDT(amount: number): string {
+    return `${Number(amount || 0).toFixed(2)} DT`;
   }
 }

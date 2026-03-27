@@ -2,11 +2,14 @@
   padding: 2rem 1rem;
   max-width: 1200px;
   margin: 0 auto;
+  color: #1f2937;
 
   .dashboard-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background:
+      radial-gradient(circle at top right, rgba(255, 255, 255, 0.16), transparent 30%),
+      linear-gradient(135deg, #0f766e 0%, #134e4a 100%);
     padding: 2rem;
-    border-radius: 12px;
+    border-radius: 20px;
     color: white;
     margin-bottom: 2rem;
     display: flex;
@@ -29,25 +32,47 @@
         font-size: 1.1rem;
         opacity: 0.9;
       }
+
+      .header-identity {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+
+        .identity-name,
+        .identity-level {
+          display: inline-flex;
+          align-items: center;
+          border-radius: 999px;
+          padding: 0.45rem 0.9rem;
+          background: rgba(255, 255, 255, 0.14);
+          border: 1px solid rgba(255, 255, 255, 0.18);
+          font-size: 0.92rem;
+          font-weight: 600;
+        }
+      }
     }
 
     .header-stats {
       display: flex;
-      gap: 1.5rem;
+      gap: 1rem;
       flex-wrap: wrap;
+      justify-content: flex-end;
 
       .stat-card {
-        background: rgba(255, 255, 255, 0.2);
-        padding: 1rem 1.5rem;
-        border-radius: 8px;
-        text-align: center;
+        background: rgba(255, 255, 255, 0.16);
+        padding: 1rem 1.2rem;
+        border-radius: 16px;
+        text-align: left;
         backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        min-width: 150px;
 
         .stat-value {
           display: block;
-          font-size: 1.8rem;
+          font-size: 1.45rem;
           font-weight: 700;
+          line-height: 1.2;
         }
 
         .stat-label {
@@ -64,37 +89,31 @@
     display: flex;
     gap: 1rem;
     margin-bottom: 2rem;
-    border-bottom: 2px solid #e0e0e0;
+    border-bottom: 1px solid #dbe3df;
     flex-wrap: wrap;
 
     .tab-btn {
-      background: none;
-      border: none;
-      padding: 1rem 1.5rem;
-      font-size: 1rem;
+      background: #f4f7f6;
+      border: 1px solid transparent;
+      padding: 0.85rem 1.2rem;
+      font-size: 0.98rem;
       font-weight: 600;
       cursor: pointer;
-      color: #666;
+      color: #4b5563;
       position: relative;
       transition: all 0.3s ease;
+      border-radius: 999px;
 
       &:hover {
-        color: #667eea;
+        color: #0f766e;
+        border-color: #bfdbd5;
+        background: #edf7f4;
       }
 
       &.active {
-        color: #667eea;
-
-        &::after {
-          content: '';
-          position: absolute;
-          bottom: -2px;
-          left: 0;
-          right: 0;
-          height: 3px;
-          background: #667eea;
-          border-radius: 3px 3px 0 0;
-        }
+        color: #ffffff;
+        background: #0f766e;
+        border-color: #0f766e;
       }
     }
   }
@@ -106,40 +125,44 @@
   .content-section {
     background: white;
     padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    border-radius: 20px;
+    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
 
     h2 {
       margin-top: 0;
       margin-bottom: 1.5rem;
-      font-size: 1.8rem;
-      color: #333;
+      font-size: 1.65rem;
+      color: #1f2937;
     }
 
     .subtitle {
-      color: #666;
+      color: #6b7280;
       margin-bottom: 1.5rem;
       font-size: 1rem;
     }
   }
 
-  // Profile Grid
   .profile-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 1.5rem;
     margin-bottom: 1.5rem;
 
+    &.profile-grid-secondary {
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      margin-top: 1rem;
+    }
+
     .profile-card {
-      background: #f8f9fa;
+      background: linear-gradient(180deg, #f9fbfb 0%, #f3f7f6 100%);
       padding: 1.5rem;
-      border-radius: 8px;
-      border-left: 4px solid #667eea;
+      border-radius: 16px;
+      border: 1px solid #e5eeeb;
 
       label {
         display: block;
         font-size: 0.9rem;
-        color: #999;
+        color: #6b7280;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.5px;
@@ -149,13 +172,32 @@
       p {
         margin: 0;
         font-size: 1.1rem;
-        color: #333;
+        color: #1f2937;
         font-weight: 500;
+      }
+
+      &.emphasis-card {
+        background: linear-gradient(180deg, #effaf6 0%, #e4f5ef 100%);
+      }
+
+      &.progress-card {
+        .eco-progress-bar {
+          width: 100%;
+          height: 12px;
+          border-radius: 999px;
+          background: #d1e8e2;
+          overflow: hidden;
+          margin-bottom: 0.85rem;
+
+          .eco-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0f766e 0%, #14b8a6 100%);
+          }
+        }
       }
     }
   }
 
-  // Orders Table
   .orders-table {
     overflow-x: auto;
 
@@ -165,36 +207,35 @@
       margin-bottom: 1.5rem;
 
       thead {
-        background: #f8f9fa;
+        background: #f3f7f6;
 
         th {
           padding: 1rem;
           text-align: left;
           font-weight: 700;
-          color: #333;
-          border-bottom: 2px solid #e0e0e0;
+          color: #1f2937;
+          border-bottom: 2px solid #dde7e4;
         }
       }
 
       tbody {
         tr {
-          border-bottom: 1px solid #e0e0e0;
+          border-bottom: 1px solid #e5eeeb;
           transition: background 0.3s ease;
 
           &:hover {
-            background: #f8f9fa;
+            background: #f8fbfa;
           }
 
           td {
             padding: 1rem;
-            color: #666;
+            color: #4b5563;
           }
         }
       }
     }
   }
 
-  // EcoPoints Section
   .écopoints-summary {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -202,11 +243,11 @@
     margin-bottom: 2rem;
 
     .ecopoint-card {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
+      background: linear-gradient(145deg, #0f766e 0%, #115e59 100%);
+      color: #ffffff;
       padding: 2rem;
-      border-radius: 12px;
-      text-align: center;
+      border-radius: 18px;
+      text-align: left;
 
       h3 {
         margin-top: 0;
@@ -217,7 +258,6 @@
       .points-display {
         display: flex;
         flex-direction: column;
-        align-items: center;
         gap: 0.5rem;
         margin-bottom: 1rem;
 
@@ -252,10 +292,25 @@
         font-size: 0.95rem;
         opacity: 0.9;
       }
+
+      small {
+        display: block;
+        margin-top: 0.65rem;
+        opacity: 0.8;
+      }
+
+      &.next-goal-card {
+        background: linear-gradient(145deg, #1f2937 0%, #111827 100%);
+
+        .goal-value {
+          font-size: 2rem;
+          font-weight: 700;
+          margin-bottom: 0.4rem;
+        }
+      }
     }
   }
 
-  // Badges Section
   .badges-section {
     margin-bottom: 2rem;
 
@@ -266,56 +321,102 @@
 
     .badges-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 1rem;
 
       .badge-item {
-        background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+        background: linear-gradient(180deg, #f9fbfa 0%, #f2f7f5 100%);
         padding: 1.5rem;
-        border-radius: 12px;
-        text-align: center;
-        color: white;
+        border-radius: 16px;
+        text-align: left;
+        color: #1f2937;
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
-        align-items: center;
+        gap: 0.6rem;
+        border: 1px solid #dce8e4;
 
-        .badge-icon {
-          font-size: 2rem;
-        }
-
+        .badge-title,
         .badge-text {
           font-weight: 600;
           font-size: 0.9rem;
         }
+
+        .badge-title {
+          font-size: 1rem;
+        }
+
+        .badge-text {
+          color: #6b7280;
+          font-weight: 500;
+        }
+
+        .badge-state {
+          margin-top: auto;
+          color: #0f766e;
+          font-size: 0.85rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+        }
       }
     }
   }
 
-  // Achievement Info
   .achievement-info {
-    background: #f0f4ff;
+    background: #f6faf8;
     padding: 1.5rem;
-    border-radius: 8px;
-    border-left: 4px solid #667eea;
+    border-radius: 16px;
+    border: 1px solid #dce8e4;
 
     h3 {
       margin-top: 0;
-      color: #667eea;
+      color: #0f766e;
     }
 
-    ul {
-      margin: 0;
-      padding-left: 1.5rem;
+    .milestones-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
 
-      li {
-        color: #666;
-        margin: 0.5rem 0;
+      .milestone-card {
+        background: #ffffff;
+        border: 1px solid #e5eeeb;
+        border-radius: 14px;
+        padding: 1rem;
+
+        .milestone-head {
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          margin-bottom: 0.5rem;
+        }
+
+        p {
+          margin: 0 0 0.75rem;
+          color: #6b7280;
+          font-size: 0.92rem;
+        }
+
+        .milestone-bar {
+          height: 10px;
+          background: #dce8e4;
+          border-radius: 999px;
+          overflow: hidden;
+          margin-bottom: 0.5rem;
+
+          .milestone-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0f766e 0%, #14b8a6 100%);
+          }
+        }
+
+        small {
+          color: #4b5563;
+        }
       }
     }
   }
 
-  // Products Grid
   .products-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -376,7 +477,7 @@
 
         .description {
           margin: 0 0 1rem 0;
-          color: #999;
+          color: #6b7280;
           font-size: 0.9rem;
           flex: 1;
         }
@@ -389,22 +490,25 @@
           font-size: 0.9rem;
 
           .price {
-            color: #667eea;
+            color: #0f766e;
           }
 
           .seller {
-            color: #999;
+            color: #6b7280;
           }
         }
       }
     }
   }
 
-  // Empty State
   .empty-state {
     text-align: center;
     padding: 3rem 1rem;
-    color: #999;
+    color: #6b7280;
+
+    &.compact {
+      padding: 1rem 0;
+    }
 
     p {
       margin-bottom: 1.5rem;
@@ -418,7 +522,7 @@
   }
 
   .text-muted {
-    color: #999;
+    color: #6b7280;
   }
 
   .mt-4 {
@@ -441,7 +545,7 @@
     font-weight: 600;
 
     &.badge-primary {
-      background: #667eea;
+      background: #0f766e;
       color: white;
     }
 
@@ -466,7 +570,6 @@
     }
   }
 
-  // Button Styles
   .btn {
     padding: 0.75rem 1.5rem;
     border: none;
@@ -479,11 +582,11 @@
     text-align: center;
 
     &.btn-primary {
-      background: #667eea;
+      background: #0f766e;
       color: white;
 
       &:hover {
-        background: #5568d3;
+        background: #115e59;
       }
     }
 

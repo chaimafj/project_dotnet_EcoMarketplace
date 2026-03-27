@@ -283,29 +283,7 @@ export class MarketplaceComponent implements OnInit {
     return 'low';
   }
 
-  getCurrencySymbol(currency?: string): string {
-    const curr = (currency || 'DT').toUpperCase();
-    switch (curr) {
-      case 'EUR':
-        return '€';
-      case 'USD':
-        return '$';
-      case 'DT':
-      default:
-        return 'DT';
-    }
-  }
-
   formatPriceWithCurrency(price: number, currency?: string): string {
-    const symbol = this.getCurrencySymbol(currency);
-    const curr = (currency || 'DT').toUpperCase();
-    
-    if (curr === 'USD') {
-      return `${symbol}${price.toFixed(2)}`;
-    } else if (curr === 'EUR') {
-      return `${price.toFixed(2)}${symbol}`;
-    } else {
-      return `${price.toFixed(2)} ${symbol}`;
-    }
+    return `${Number(price || 0).toFixed(2)} DT`;
   }
 }

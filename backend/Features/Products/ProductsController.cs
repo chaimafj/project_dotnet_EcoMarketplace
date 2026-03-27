@@ -186,7 +186,7 @@ namespace EcoMarketplace.API.Controllers
                 product.Condition = condition;
                 product.Category = category;
                 product.Currency = currency;
-                product.CarbonFootprint = createProductDto.CarbonFootprint;
+                ApplyAutomaticEcoInputs(product, createProductDto);
 
                 var ecoBreakdown = _ecoScoreService.Calculate(product);
                 product.EcoScore = ecoBreakdown.FinalScore;
@@ -256,10 +256,7 @@ namespace EcoMarketplace.API.Controllers
             product.Latitude = updateProductDto.Latitude;
             product.Longitude = updateProductDto.Longitude;
             product.Material = updateProductDto.Material;
-            product.IsRecycled = updateProductDto.IsRecycled;
-            product.IsSustainable = updateProductDto.IsSustainable;
-            product.CarbonFootprint = updateProductDto.CarbonFootprint;
-            product.RecycledPercentage = updateProductDto.RecycledPercentage;
+            ApplyAutomaticEcoInputs(product, updateProductDto);
 
             var ecoBreakdown = _ecoScoreService.Calculate(product);
             product.EcoScore = ecoBreakdown.FinalScore;
@@ -301,6 +298,97 @@ namespace EcoMarketplace.API.Controllers
             dto.EcoScoreDetails = _ecoScoreService.Calculate(product);
             dto.EcoScore = dto.EcoScoreDetails.FinalScore;
             return dto;
+        }
+
+        private static void ApplyAutomaticEcoInputs(Product product, CreateProductDto dto)
+        {
+            var normalizedMaterial = (product.Material ?? string.Empty).Trim().ToLowerInvariant();
+
+            var inferredRecycled = InferRecycledFromMaterial(normalizedMaterial);
+            var inferredSustainable = InferSustainableFromMaterial(normalizedMaterial);
+
+            product.IsRecycled = dto.IsRecycled ?? inferredRecycled;
+            product.IsSustainable = dto.IsSustainable ?? inferredSustainable;
+
+            product.RecycledPercentage = dto.RecycledPercentage
+                ?? EstimateRecycledPercentage(product.Condition, product.IsRecycled, product.IsSustainable);
+
+            product.RecycledPercentage = Math.Clamp(product.RecycledPercentage, 0, 100);
+
+            product.CarbonFootprint = dto.CarbonFootprint
+                ?? EstimateCarbonFootprint(product.Category, product.Condition, product.IsRecycled, product.IsSustainable);
+
+            product.CarbonFootprint = Math.Clamp(product.CarbonFootprint, 5d, 95d);
+        }
+
+        private static bool InferRecycledFromMaterial(string material)
+        {
+            if (string.IsNullOrWhiteSpace(material)) return false;
+
+            return material.Contains("recycle")
+                || material.Contains("recycl")
+                || material.Contains("upcycl")
+                || material.Contains("second hand")
+                || material.Contains("seconde main");
+        }
+
+        private static bool InferSustainableFromMaterial(string material)
+        {
+            if (string.IsNullOrWhiteSpace(material)) return false;
+
+            return material.Contains("organic")
+                || material.Contains("biologique")
+                || material.Contains("bamboo")
+                || material.Contains("fsc")
+                || material.Contains("durable")
+                || material.Contains("eco");
+        }
+
+        private static int EstimateRecycledPercentage(ProductCondition condition, bool isRecycled, bool isSustainable)
+        {
+            var baseValue = condition switch
+            {
+                ProductCondition.New => 20,
+                ProductCondition.LikeNew => 35,
+                ProductCondition.Good => 45,
+                ProductCondition.Fair => 55,
+                ProductCondition.ForRecycling => 75,
+                _ => 30
+            };
+
+            if (isRecycled) baseValue += 20;
+            if (isSustainable) baseValue += 10;
+
+            return Math.Clamp(baseValue, 0, 100);
+        }
+
+        private static double EstimateCarbonFootprint(ProductCategory category, ProductCondition condition, bool isRecycled, bool isSustainable)
+        {
+            var categoryBase = category switch
+            {
+                ProductCategory.Electronics => 52d,
+                ProductCategory.Furniture => 42d,
+                ProductCategory.Textile => 36d,
+                ProductCategory.Sports => 30d,
+                ProductCategory.Books => 18d,
+                ProductCategory.Other => 28d,
+                _ => 30d
+            };
+
+            var conditionAdjustment = condition switch
+            {
+                ProductCondition.New => 8d,
+                ProductCondition.LikeNew => 2d,
+                ProductCondition.Good => -3d,
+                ProductCondition.Fair => -8d,
+                ProductCondition.ForRecycling => -12d,
+                _ => 0d
+            };
+
+            var recycledAdjustment = isRecycled ? -10d : 0d;
+            var sustainableAdjustment = isSustainable ? -8d : 0d;
+
+            return categoryBase + conditionAdjustment + recycledAdjustment + sustainableAdjustment;
         }
     }
 }

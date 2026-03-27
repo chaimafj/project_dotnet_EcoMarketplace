@@ -16,6 +16,16 @@ interface Order {
   purchasedAt: Date;
 }
 
+interface BuyerBadge {
+  title: string;
+  description: string;
+  threshold: number;
+  current: number;
+  unit: string;
+  unlocked: boolean;
+  progress: number;
+}
+
 @Component({
   standalone: true,
   selector: 'app-buyer-dashboard',
@@ -31,6 +41,50 @@ export class BuyerDashboardComponent implements OnInit {
   orders: Order[] = [];
   recommendedProducts: Product[] = [];
   recommendationMessage = '';
+  private readonly badgeBlueprints = [
+    {
+      title: 'Nouveau membre',
+      description: 'Créer un compte et commencer votre parcours responsable.',
+      threshold: 1,
+      unit: 'profil',
+      current: () => this.user ? 1 : 0
+    },
+    {
+      title: 'Acheteur engagé',
+      description: 'Passer 3 commandes sur la marketplace.',
+      threshold: 3,
+      unit: 'commandes',
+      current: () => this.orders.length
+    },
+    {
+      title: 'Eco score 50',
+      description: 'Atteindre un score éco de 50.',
+      threshold: 50,
+      unit: 'points de score',
+      current: () => this.ecoScore
+    },
+    {
+      title: 'Eco score 80',
+      description: 'Atteindre un score éco excellent.',
+      threshold: 80,
+      unit: 'points de score',
+      current: () => this.ecoScore
+    },
+    {
+      title: 'Client durable',
+      description: 'Cumuler 100 écoPoints.',
+      threshold: 100,
+      unit: 'écoPoints',
+      current: () => this.totalPoints
+    },
+    {
+      title: 'Ambassadeur',
+      description: 'Cumuler 200 écoPoints.',
+      threshold: 200,
+      unit: 'écoPoints',
+      current: () => this.totalPoints
+    }
+  ];
 
   constructor(
     public authService: AuthService,
@@ -127,12 +181,64 @@ export class BuyerDashboardComponent implements OnInit {
     return this.user?.ecoScore ?? 0;
   }
 
-  get badges(): string[] {
-    // Simulated badge assignment based on eco score
-    const badges = [];
-    if (this.ecoScore >= 100) badges.push('🌿 Écolo Confirmé');
-    if (this.orders.length >= 5) badges.push('🛍️ Acheteur Loyal');
-    if (this.totalPoints >= 200) badges.push('⭐ VIP');
-    return badges.length > 0 ? badges : ['🆕 Nouveau Membre'];
+  get buyerName(): string {
+    const fullName = `${this.user?.firstName ?? ''} ${this.user?.lastName ?? ''}`.trim();
+    return fullName || this.user?.username || 'Acheteur';
+  }
+
+  get completedOrdersCount(): number {
+    return this.orders.filter((order) => order.status === 'completed').length;
+  }
+
+  get totalSpent(): number {
+    return this.orders.reduce((sum, order) => sum + Number(order.totalPrice || 0), 0);
+  }
+
+  get averageOrderValue(): number {
+    if (!this.orders.length) return 0;
+    return this.totalSpent / this.orders.length;
+  }
+
+  get ecoLevel(): string {
+    if (this.totalPoints >= 200 || this.ecoScore >= 80) return 'Niveau avance';
+    if (this.totalPoints >= 100 || this.ecoScore >= 50) return 'Niveau intermediaire';
+    return 'Niveau debutant';
+  }
+
+  get ecoProgress(): number {
+    return Math.min(this.ecoScore, 100);
+  }
+
+  get badges(): BuyerBadge[] {
+    return this.badgeBlueprints.map((badge) => {
+      const current = badge.current();
+      const progress = Math.min(Math.round((current / badge.threshold) * 100), 100);
+
+      return {
+        title: badge.title,
+        description: badge.description,
+        threshold: badge.threshold,
+        current,
+        unit: badge.unit,
+        unlocked: current >= badge.threshold,
+        progress
+      };
+    });
+  }
+
+  get unlockedBadges(): BuyerBadge[] {
+    return this.badges.filter((badge) => badge.unlocked);
+  }
+
+  get upcomingBadges(): BuyerBadge[] {
+    return this.badges.filter((badge) => !badge.unlocked).slice(0, 3);
+  }
+
+  get nextGoal(): BuyerBadge | null {
+    return this.badges.find((badge) => !badge.unlocked) ?? null;
+  }
+
+  formatPriceDT(amount: number): string {
+    return `${Number(amount || 0).toFixed(2)} DT`;
   }
 }
