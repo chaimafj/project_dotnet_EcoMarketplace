@@ -44,4 +44,11 @@ namespace EcoMarketplace.API.DTOs
         string Currency,
         string Status,
         DateTime PurchasedAt);
+
+    public record ConfirmSaleResultDto(
+        string Message,
+        string Status,
+        DateTime? ConfirmedAt);
+
+    public record UpdateSaleStatusDto(string Status);
 }

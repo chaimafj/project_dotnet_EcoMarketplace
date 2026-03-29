@@ -54,6 +54,16 @@ export interface SellerSale {
   purchasedAt: string;
 }
 
+export interface ConfirmSaleResponse {
+  message: string;
+  status: string;
+  confirmedAt?: string;
+}
+
+export interface UpdateSaleStatusRequest {
+  status: 'pending' | 'completed' | 'failed' | 'refunded';
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -72,5 +82,20 @@ export class TransactionService {
 
   getBySeller(sellerId: number): Observable<SellerSale[]> {
     return this.http.get<SellerSale[]>(`${this.apiUrl}/seller/${sellerId}`);
+  }
+
+  confirmSale(sellerId: number, transactionId: number): Observable<ConfirmSaleResponse> {
+    return this.http.post<ConfirmSaleResponse>(`${this.apiUrl}/seller/${sellerId}/sales/${transactionId}/confirm`, {});
+  }
+
+  updateSaleStatus(
+    sellerId: number,
+    transactionId: number,
+    payload: UpdateSaleStatusRequest
+  ): Observable<ConfirmSaleResponse> {
+    return this.http.put<ConfirmSaleResponse>(
+      `${this.apiUrl}/seller/${sellerId}/sales/${transactionId}/status`,
+      payload
+    );
   }
 }

@@ -267,9 +267,31 @@
 
           <div class="summary-card">
             <h3>Moyenne par Produit</h3>
-            <p class="summary-value">{{ (totalSales / totalProducts) | number:'1.1-1' }}</p>
+            <p class="summary-value">{{ averageSalesPerProduct | number:'1.1-1' }}</p>
             <p class="summary-desc">ventes par article</p>
           </div>
+
+          <div class="summary-card">
+            <h3>Commandes confirmées</h3>
+            <p class="summary-value">{{ completedSalesCount }}</p>
+            <p class="summary-desc">CA confirmé: {{ completedRevenueLabel }}</p>
+          </div>
+
+          <div class="summary-card summary-card-warning">
+            <h3>En attente de confirmation</h3>
+            <p class="summary-value">{{ pendingSalesCount }}</p>
+            <p class="summary-desc">Valeur en attente: {{ pendingRevenueLabel }}</p>
+          </div>
+
+          <div class="summary-card summary-card-info">
+            <h3>Taux de confirmation</h3>
+            <p class="summary-value">{{ confirmationRate }}%</p>
+            <p class="summary-desc">sur {{ sellerSales.length }} commandes</p>
+          </div>
+        </div>
+
+        <div *ngIf="salesMessage" class="sales-feedback" [ngClass]="salesMessageType === 'success' ? 'ok' : 'error'">
+          {{ salesMessage }}
         </div>
 
         <div class="sales-chart">
@@ -310,6 +332,7 @@
                 <th>Montant</th>
                 <th>Date</th>
                 <th>Statut</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody>
@@ -319,7 +342,19 @@
                 <td>{{ sale.quantity }}</td>
                 <td>{{ formatPriceWithCurrency(sale.totalPrice, sale.currency) }}</td>
                 <td>{{ sale.purchasedAt | date:'dd/MM/yyyy HH:mm' }}</td>
-                <td>{{ sale.status }}</td>
+                <td>
+                  <span [class]="getSaleStatusClass(sale.status)">{{ getSaleStatusLabel(sale.status) }}</span>
+                </td>
+                <td>
+                  <button
+                    *ngIf="isPendingSale(sale)"
+                    class="btn btn-sm btn-primary"
+                    (click)="confirmPendingSale(sale)"
+                    [disabled]="isConfirmingSale(sale.id)">
+                    {{ isConfirmingSale(sale.id) ? 'Confirmation...' : 'Confirmer' }}
+                  </button>
+                  <span *ngIf="!isPendingSale(sale)" class="text-muted">-</span>
+                </td>
               </tr>
             </tbody>
           </table>

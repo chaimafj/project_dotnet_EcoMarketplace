@@ -133,7 +133,16 @@
                     (click)="addToCart(product)">
                     {{ getBuyButtonLabel(product) }}
                   </button>
-                  <a *ngIf="canShowCartActions()" class="btn btn-sm btn-outline-primary" [routerLink]="['/cart']">Panier</a>
+                  <button
+                    *ngIf="canShowFavoriteActions()"
+                    type="button"
+                    class="btn btn-sm favorite-star-btn"
+                    [class.active]="isFavorite(product)"
+                    (click)="toggleFavorite(product)"
+                    [attr.aria-label]="isFavorite(product) ? 'Retirer des favoris' : 'Ajouter aux favoris'"
+                    [title]="isFavorite(product) ? 'Retirer des favoris' : 'Ajouter aux favoris'">
+                    <span aria-hidden="true">{{ isFavorite(product) ? '★' : '☆' }}</span>
+                  </button>
                   <button
                     *ngIf="isAdminUser()"
                     class="btn btn-sm btn-outline-primary"

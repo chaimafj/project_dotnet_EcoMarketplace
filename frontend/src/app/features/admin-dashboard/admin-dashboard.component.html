@@ -2,10 +2,21 @@
   <div class="dashboard-header">
     <div class="header-content">
       <h1>Panneau d'Administration</h1>
-      <p class="subtitle">Gestion complète de la plateforme</p>
+      <p class="subtitle">Pilotez la plateforme, moderez les contenus et suivez les performances globales.</p>
+
+      <div class="header-kpis">
+        <div class="kpi-pill">
+          <span>Utilisateurs actifs</span>
+          <strong>{{ activeUserRate | number:'1.0-1' }}%</strong>
+        </div>
+        <div class="kpi-pill">
+          <span>File de moderation</span>
+          <strong>{{ moderationQueueCount }}</strong>
+        </div>
+      </div>
     </div>
     <div class="admin-badge">
-      <span>👑 Administrateur</span>
+      <span>Administrateur</span>
     </div>
   </div>
 
@@ -15,25 +26,25 @@
       class="tab-btn"
       [class.active]="currentTab === 'overview'"
       (click)="setTab('overview')">
-      📊 Aperçu
+      Aperçu
     </button>
     <button 
       class="tab-btn"
       [class.active]="currentTab === 'users'"
       (click)="setTab('users')">
-      👥 Utilisateurs
+      Utilisateurs
     </button>
     <button 
       class="tab-btn"
       [class.active]="currentTab === 'products'"
       (click)="setTab('products')">
-      📦 Produits
+      Produits
     </button>
     <button 
       class="tab-btn"
       [class.active]="currentTab === 'stats'"
       (click)="setTab('stats')">
-      📈 Statistiques Détaillées
+      Statistiques détaillées
     </button>
   </div>
 
@@ -46,35 +57,32 @@
         
         <div class="stats-grid">
           <div class="stats-card">
-            <div class="stat-icon">👥</div>
             <div class="stat-info">
-              <p class="stat-label">Utilisateurs Totals</p>
+              <p class="stat-label">Utilisateurs</p>
               <p class="stat-value">{{ platformStats.totalUsers }}</p>
               <p class="stat-subvalue">{{ platformStats.activeUsers }} actifs</p>
             </div>
           </div>
 
           <div class="stats-card">
-            <div class="stat-icon">📦</div>
             <div class="stat-info">
-              <p class="stat-label">Produits en Vente</p>
+              <p class="stat-label">Produits</p>
               <p class="stat-value">{{ platformStats.totalProducts }}</p>
               <p class="stat-subvalue">{{ platformStats.availableProducts }} disponibles</p>
             </div>
           </div>
 
           <div class="stats-card">
-            <div class="stat-icon">💳</div>
             <div class="stat-info">
               <p class="stat-label">Transactions</p>
               <p class="stat-value">{{ platformStats.totalTransactions }}</p>
+              <p class="stat-subvalue">Conversion {{ conversionRate | number:'1.0-1' }}%</p>
             </div>
           </div>
 
           <div class="stats-card">
-            <div class="stat-icon">💶</div>
             <div class="stat-info">
-              <p class="stat-label">Revenus Totals</p>
+              <p class="stat-label">Revenus</p>
               <p class="stat-value revenue-multi">{{ formatRevenueByCurrency() }}</p>
             </div>
           </div>
@@ -116,15 +124,12 @@
           <h3>Actions Rapides</h3>
           <div class="actions-grid">
             <button class="action-btn" (click)="setTab('users')">
-              <span class="action-icon">👥</span>
               <span>Gérer Utilisateurs</span>
             </button>
             <button class="action-btn" (click)="setTab('products')">
-              <span class="action-icon">📦</span>
               <span>Modérer Produits</span>
             </button>
             <button class="action-btn" (click)="setTab('stats')">
-              <span class="action-icon">📈</span>
               <span>Voir Rapports</span>
             </button>
           </div>
@@ -147,7 +152,6 @@
             <option value="all">Tous les rôles</option>
             <option value="Buyer">Acheteurs</option>
             <option value="Seller">Vendeurs</option>
-            <option value="Admin">Administrateurs</option>
           </select>
         </div>
 
@@ -155,7 +159,8 @@
           <p>Chargement des utilisateurs...</p>
         </div>
 
-        <table class="users-table" *ngIf="!loading">
+        <div class="table-wrap" *ngIf="!loading">
+        <table class="users-table">
           <thead>
             <tr>
               <th>Nom</th>
@@ -185,19 +190,22 @@
                   class="status-select"
                   [value]="u.status"
                   (change)="changeUserStatus(u, $any($event.target).value)"
-                  [ngClass]="getStatusBadgeClass(u.status)">
+                  [ngClass]="getStatusBadgeClass(u.status)"
+                  [disabled]="isAdminUser(u)">
                   <option value="active">Actif</option>
                   <option value="inactive">Inactif</option>
                 </select>
               </td>
               <td>
-                <button class="btn-delete" (click)="deleteUser(u.id)" title="Supprimer">
+                <button class="btn-delete" (click)="deleteUser(u.id)" title="Supprimer" [disabled]="isAdminUser(u)">
                   🗑️
                 </button>
+                <span *ngIf="isAdminUser(u)" class="protected-label">Compte admin protégé</span>
               </td>
             </tr>
           </tbody>
         </table>
+        </div>
 
         <div *ngIf="!loading && getFilteredUsers().length === 0" class="empty-state">
           <p>Aucun utilisateur trouvé</p>
@@ -208,13 +216,35 @@
     <!-- Products Management Tab -->
     <ng-container *ngIf="currentTab === 'products'">
       <div class="content-section">
-        <h2>Gestion des Produits</h2>
+        <div class="products-head-row">
+          <h2>Gestion des Produits</h2>
+
+          <div class="products-toolbar" *ngIf="!loading">
+            <button
+              class="toolbar-btn"
+              [class.active]="!showAllProducts"
+              (click)="setProductDisplayMode(false)">
+              Produits à modérer
+            </button>
+            <button
+              class="toolbar-btn"
+              [class.active]="showAllProducts"
+              (click)="setProductDisplayMode(true)">
+              Afficher tous les produits
+            </button>
+          </div>
+        </div>
         
         <div *ngIf="loading" class="text-center text-muted">
           <p>Chargement des produits...</p>
         </div>
 
-        <table class="products-table" *ngIf="!loading && products.length > 0">
+        <div *ngIf="!loading && productsLoadError" class="products-load-error">
+          {{ productsLoadError }}
+        </div>
+
+        <div class="table-wrap" *ngIf="!loading && !productsLoadError && getDisplayedProducts().length > 0">
+        <table class="products-table">
           <thead>
             <tr>
               <th>Produit</th>
@@ -230,13 +260,13 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let product of products">
+            <tr *ngFor="let product of getDisplayedProducts()">
               <td>
                 <strong>{{ product.title }}</strong>
               </td>
               <td>{{ product.sellerName }}</td>
               <td>{{ formatPriceWithCurrency(product.price, product.currency) }}</td>
-              <td>{{ product.status }}</td>
+              <td><span [class]="getProductStatusClass(product.status)">{{ product.status }}</span></td>
               <td><span class="eco-badge">{{ product.ecoScore }}</span></td>
               <td>{{ product.category }}</td>
               <td>{{ product.material || 'N/A' }}</td>
@@ -257,9 +287,10 @@
             </tr>
           </tbody>
         </table>
+        </div>
 
-        <div *ngIf="!loading && products.length === 0" class="empty-state">
-          <p>Aucun produit à modérer</p>
+        <div *ngIf="!loading && !productsLoadError && getDisplayedProducts().length === 0" class="empty-state">
+          <p>{{ showAllProducts ? 'Aucun produit disponible' : 'Aucun produit à modérer' }}</p>
         </div>
       </div>
     </ng-container>
@@ -284,7 +315,7 @@
 
           <div class="detail-card">
             <h3>Taux de Conversion</h3>
-            <p class="detail-value">{{ ((platformStats.totalTransactions / platformStats.totalUsers) * 100) | number:'1.1-1' }}%</p>
+            <p class="detail-value">{{ conversionRate | number:'1.1-1' }}%</p>
             <p class="detail-desc">utilisateurs ayant acheté</p>
           </div>
         </div>
@@ -292,17 +323,17 @@
         <div class="chart-section">
           <h3>Activité Récente</h3>
           <div class="chart-placeholder">
-            <p>📊 Graphique d'activité à venir</p>
+            <p>Graphique d'activité à venir</p>
           </div>
         </div>
 
         <div class="reports-section">
           <h3>Rapports & Exports</h3>
           <div class="reports-buttons">
-            <button class="btn btn-primary">📥 Exporter Utilisateurs (CSV)</button>
-            <button class="btn btn-primary">📥 Exporter Produits (CSV)</button>
-            <button class="btn btn-primary">📥 Rapport Financier (PDF)</button>
-            <button class="btn btn-primary">📥 Impact Environnemental (PDF)</button>
+            <button class="btn btn-primary">Exporter Utilisateurs (CSV)</button>
+            <button class="btn btn-primary">Exporter Produits (CSV)</button>
+            <button class="btn btn-primary">Rapport Financier (PDF)</button>
+            <button class="btn btn-primary">Impact Environnemental (PDF)</button>
           </div>
         </div>
       </div>

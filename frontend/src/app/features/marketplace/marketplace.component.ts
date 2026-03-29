@@ -9,6 +9,7 @@ import { AuthService } from '../../Services/auth.service';
 import { Router } from '@angular/router';
 import { AdminService } from '../../Services/admin.service';
 import { CartService } from '../../Services/cart.service';
+import { FavoritesService } from '../../Services/favorites.service';
 
 @Component({
   standalone: true,
@@ -28,6 +29,7 @@ export class MarketplaceComponent implements OnInit {
   loading = false;
   validatingProductId: string | number | null = null;
   purchaseMessage = '';
+  favoriteProductIds = new Set<string>();
   categories = ['Electronics', 'Textile', 'Furniture', 'Books', 'Sports', 'Other'];
   ecoScoreRanges = [
     { label: 'All', min: 0 },
@@ -40,6 +42,7 @@ export class MarketplaceComponent implements OnInit {
     private productService: ProductService,
     private authService: AuthService,
     private cartService: CartService,
+    private favoritesService: FavoritesService,
     private adminService: AdminService,
     private router: Router,
     private fb: FormBuilder
@@ -54,6 +57,7 @@ export class MarketplaceComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadProducts();
+    this.syncFavorites();
 
     this.filterForm.valueChanges
       .pipe(
@@ -82,6 +86,7 @@ export class MarketplaceComponent implements OnInit {
       next: (response) => {
         const items = this.extractItems(response);
         this.products = items.map((product) => this.normalizeProduct(product));
+        this.syncFavorites();
         this.totalCount = response?.totalCount ?? this.products.length;
         this.totalPages = response?.totalPages ?? 1;
         this.loading = false;
@@ -211,6 +216,43 @@ export class MarketplaceComponent implements OnInit {
 
     this.cartService.addProduct(product);
     this.purchaseMessage = 'Produit ajouté au panier.';
+  }
+
+  toggleFavorite(product: Product): void {
+    this.purchaseMessage = '';
+
+    if (!this.authService.isAuthenticated()) {
+      this.router.navigate(['/login'], { queryParams: { returnUrl: '/products' } });
+      return;
+    }
+
+    const role = (this.authService.getCurrentUser()?.role || '').toLowerCase();
+    if (role !== 'buyer') {
+      this.purchaseMessage = 'Seuls les acheteurs peuvent utiliser les favoris.';
+      return;
+    }
+
+    const isNowFavorite = this.favoritesService.toggleFavorite(product);
+    this.syncFavorites();
+    this.purchaseMessage = isNowFavorite
+      ? 'Produit ajoute aux favoris.'
+      : 'Produit retire des favoris.';
+  }
+
+  isFavorite(product: Product): boolean {
+    return this.favoriteProductIds.has(String(product.id));
+  }
+
+  canShowFavoriteActions(): boolean {
+    if (!this.authService.isAuthenticated()) return true;
+    const role = this.authService.getCurrentUser()?.role?.toLowerCase();
+    return role === 'buyer';
+  }
+
+  private syncFavorites(): void {
+    this.favoriteProductIds = new Set(
+      this.favoritesService.getFavorites().map((p) => String(p.id))
+    );
   }
 
   canShowCartActions(): boolean {

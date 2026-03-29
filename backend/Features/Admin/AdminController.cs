@@ -60,6 +60,9 @@ namespace EcoMarketplace.API.Controllers
             var user = await _userRepository.GetByIdAsync(id);
             if (user == null) return NotFound();
 
+            if (user.Role == UserRole.Admin)
+                return BadRequest(new { message = "Admin account is protected and cannot be deactivated." });
+
             var requestedStatus = (dto.Status ?? string.Empty).Trim().ToLowerInvariant();
             user.IsActive = requestedStatus == "active";
 
@@ -72,6 +75,9 @@ namespace EcoMarketplace.API.Controllers
         {
             var user = await _userRepository.GetByIdAsync(id);
             if (user == null) return NotFound();
+
+            if (user.Role == UserRole.Admin)
+                return BadRequest(new { message = "Admin account is protected and cannot be deleted." });
 
             await _userRepository.DeleteAsync(id);
             return NoContent();
@@ -86,12 +92,17 @@ namespace EcoMarketplace.API.Controllers
                 .Include(p => p.Transactions)
                 .Where(p => p.Status != ProductStatus.Removed)
                 .OrderByDescending(p => p.CreatedAt)
-                .Select(p => new AdminProductDto(
+                .ToListAsync();
+
+            var result = products.Select(p =>
+            {
+                var sellerDisplayName = string.Join(' ', new[] { p.Seller.FirstName, p.Seller.LastName }
+                    .Where(x => !string.IsNullOrWhiteSpace(x)));
+
+                return new AdminProductDto(
                     p.Id,
                     p.Title,
-                    string.Join(' ', new[] { p.Seller.FirstName, p.Seller.LastName }.Where(x => !string.IsNullOrWhiteSpace(x))).Trim().Length > 0
-                        ? string.Join(' ', new[] { p.Seller.FirstName, p.Seller.LastName }.Where(x => !string.IsNullOrWhiteSpace(x)))
-                        : p.Seller.Username,
+                    string.IsNullOrWhiteSpace(sellerDisplayName) ? p.Seller.Username : sellerDisplayName,
                     p.SellerId,
                     p.Price,
                     p.Currency.ToString(),
@@ -100,10 +111,10 @@ namespace EcoMarketplace.API.Controllers
                     p.Material,
                     p.Category.ToString(),
                     p.CreatedAt,
-                    p.Transactions.Count(t => t.TransactionType == TransactionType.Purchase)))
-                .ToListAsync();
+                    p.Transactions.Count(t => t.TransactionType == TransactionType.Purchase));
+            }).ToList();
 
-            return Ok(products);
+            return Ok(result);
         }
 
         [HttpPost("validate-product/{id:int}")]

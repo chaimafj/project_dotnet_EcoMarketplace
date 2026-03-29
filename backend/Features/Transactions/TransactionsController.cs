@@ -71,9 +71,9 @@ namespace EcoMarketplace.API.Controllers
                 ShippingAddress = dto.Address?.Trim(),
                 ShippingCity = dto.City?.Trim(),
                 ShippingPostalCode = dto.PostalCode?.Trim(),
-                Status = TransactionStatus.Completed,
+                Status = TransactionStatus.Pending,
                 CreatedAt = DateTime.UtcNow,
-                CompletedAt = DateTime.UtcNow
+                CompletedAt = null
             };
 
             await _dbContext.Transactions.AddAsync(transaction);
@@ -112,7 +112,70 @@ namespace EcoMarketplace.API.Controllers
                 transaction.Status.ToString(),
                 transaction.CreatedAt);
 
-            return Ok(new { message = "Purchase processed successfully.", transaction = result });
+            return Ok(new { message = "Purchase created and awaiting seller confirmation.", transaction = result });
+        }
+
+        [HttpPost("seller/{sellerId:int}/sales/{transactionId:int}/confirm")]
+        public async Task<IActionResult> ConfirmSale(int sellerId, int transactionId)
+        {
+            var transaction = await _dbContext.Transactions
+                .FirstOrDefaultAsync(t => t.Id == transactionId && t.TransactionType == TransactionType.Purchase);
+
+            if (transaction == null)
+                return NotFound(new { message = "Sale not found" });
+
+            if (transaction.SellerId != sellerId)
+                return BadRequest(new { message = "This sale does not belong to the seller" });
+
+            if (transaction.Status == TransactionStatus.Completed)
+            {
+                return Ok(new ConfirmSaleResultDto(
+                    "Sale already confirmed.",
+                    transaction.Status.ToString().ToLower(),
+                    transaction.CompletedAt));
+            }
+
+            if (transaction.Status != TransactionStatus.Pending)
+                return BadRequest(new { message = "Only pending sales can be confirmed" });
+
+            transaction.Status = TransactionStatus.Completed;
+            transaction.CompletedAt = DateTime.UtcNow;
+
+            await _dbContext.SaveChangesAsync();
+
+            return Ok(new ConfirmSaleResultDto(
+                "Sale confirmed successfully.",
+                transaction.Status.ToString().ToLower(),
+                transaction.CompletedAt));
+        }
+
+        [HttpPut("seller/{sellerId:int}/sales/{transactionId:int}/status")]
+        public async Task<IActionResult> UpdateSaleStatus(int sellerId, int transactionId, [FromBody] UpdateSaleStatusDto dto)
+        {
+            var transaction = await _dbContext.Transactions
+                .FirstOrDefaultAsync(t => t.Id == transactionId && t.TransactionType == TransactionType.Purchase);
+
+            if (transaction == null)
+                return NotFound(new { message = "Sale not found" });
+
+            if (transaction.SellerId != sellerId)
+                return BadRequest(new { message = "This sale does not belong to the seller" });
+
+            if (string.IsNullOrWhiteSpace(dto.Status))
+                return BadRequest(new { message = "Status is required" });
+
+            if (!Enum.TryParse<TransactionStatus>(dto.Status, true, out var newStatus))
+                return BadRequest(new { message = "Invalid status. Allowed: pending, completed, failed, refunded" });
+
+            transaction.Status = newStatus;
+            transaction.CompletedAt = newStatus == TransactionStatus.Completed ? DateTime.UtcNow : null;
+
+            await _dbContext.SaveChangesAsync();
+
+            return Ok(new ConfirmSaleResultDto(
+                "Sale status updated successfully.",
+                transaction.Status.ToString().ToLower(),
+                transaction.CompletedAt));
         }
 
         [HttpGet("user/{userId:int}")]

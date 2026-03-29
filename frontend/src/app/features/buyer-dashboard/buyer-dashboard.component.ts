@@ -1,10 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../Services/auth.service';
 import { ProductService, Product } from '../../Services/product.service';
 import { TransactionService } from '../../Services/transaction.service';
 import { CartService } from '../../Services/cart.service';
+import { UserService } from '../../Services/user.service';
+import { FavoritesService } from '../../Services/favorites.service';
 
 interface Order {
   id: number;
@@ -29,18 +32,22 @@ interface BuyerBadge {
 @Component({
   standalone: true,
   selector: 'app-buyer-dashboard',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule],
   templateUrl: './buyer-dashboard.component.html',
   styleUrl: './buyer-dashboard.component.scss'
 })
 export class BuyerDashboardComponent implements OnInit {
   currentTab: 'profile' | 'orders' | 'écopoints' | 'recommended' = 'profile';
+  private readonly fallbackImage = 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=900&q=80';
   
   user: any;
   loading = false;
   orders: Order[] = [];
   recommendedProducts: Product[] = [];
+  favoriteProducts: Product[] = [];
   recommendationMessage = '';
+  profileSaveMessage = '';
+  savingProfile = false;
   private readonly badgeBlueprints = [
     {
       title: 'Nouveau membre',
@@ -85,23 +92,48 @@ export class BuyerDashboardComponent implements OnInit {
       current: () => this.totalPoints
     }
   ];
+  private readonly fb = inject(FormBuilder);
+
+  profileForm = this.fb.group({
+    firstName: ['', [Validators.required, Validators.minLength(2)]],
+    lastName: ['', [Validators.required, Validators.minLength(2)]],
+    email: [{ value: '', disabled: true }],
+  });
 
   constructor(
     public authService: AuthService,
     private productService: ProductService,
     private transactionService: TransactionService,
-    private cartService: CartService
+    private cartService: CartService,
+    private userService: UserService,
+    private favoritesService: FavoritesService
   ) {
     this.user = this.authService.getCurrentUser();
   }
 
   ngOnInit(): void {
+    this.syncProfileForm();
+    this.loadFavoriteProducts();
     this.loadOrders();
     this.loadRecommendedProducts();
   }
 
+  private syncProfileForm(): void {
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) return;
+
+    this.profileForm.patchValue({
+      firstName: currentUser.firstName ?? '',
+      lastName: currentUser.lastName ?? '',
+      email: currentUser.email ?? '',
+    });
+  }
+
   setTab(tab: 'profile' | 'orders' | 'écopoints' | 'recommended'): void {
     this.currentTab = tab;
+    if (tab === 'profile') {
+      this.loadFavoriteProducts();
+    }
   }
 
   loadOrders(): void {
@@ -137,7 +169,7 @@ export class BuyerDashboardComponent implements OnInit {
     this.loading = true;
     this.productService.getProducts({ page: 1, pageSize: 6 }).subscribe({
       next: (response) => {
-        const allProducts = (response?.items ?? []) as Product[];
+        const allProducts = ((response?.items ?? []) as Product[]).map((product) => this.normalizeProduct(product));
         // Filter out user's own products and limit to 6
         const userId = String(this.user?.id);
         this.recommendedProducts = allProducts
@@ -150,6 +182,45 @@ export class BuyerDashboardComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  private normalizeProduct(product: Product): Product {
+    const images = Array.isArray((product as any)?.images)
+      ? (product as any).images
+      : Array.isArray((product as any)?.Images)
+        ? (product as any).Images
+        : [];
+
+    const image = (product as any)?.image ?? (product as any)?.Image ?? images[0] ?? this.fallbackImage;
+
+    return {
+      ...product,
+      id: (product as any)?.id ?? (product as any)?.Id,
+      sellerId: (product as any)?.sellerId ?? (product as any)?.SellerId,
+      sellerName: (product as any)?.sellerName ?? (product as any)?.SellerName ?? 'Vendeur inconnu',
+      image,
+      images,
+      title: (product as any)?.title ?? (product as any)?.Title ?? 'Produit',
+      description: (product as any)?.description ?? (product as any)?.Description ?? '',
+      price: Number((product as any)?.price ?? (product as any)?.Price ?? 0),
+      ecoScore: Number((product as any)?.ecoScore ?? (product as any)?.EcoScore ?? 0),
+    };
+  }
+
+  getRecommendedImage(product: Product): string {
+    const images = Array.isArray(product.images) ? product.images : [];
+    return product.image ?? images[0] ?? this.fallbackImage;
+  }
+
+  getRecommendedDescription(product: Product): string {
+    const description = String(product.description ?? '');
+    if (description.length <= 60) return description;
+    return `${description.slice(0, 60)}...`;
+  }
+
+  onImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.src = this.fallbackImage;
   }
 
   getStatusBadgeClass(status: string): string {
@@ -171,6 +242,61 @@ export class BuyerDashboardComponent implements OnInit {
   addRecommendedToCart(product: Product): void {
     this.cartService.addProduct(product);
     this.recommendationMessage = 'Produit ajoute au panier.';
+  }
+
+  saveProfile(): void {
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser || this.profileForm.invalid) {
+      this.profileForm.markAllAsTouched();
+      this.profileSaveMessage = 'Veuillez verifier les champs du profil.';
+      return;
+    }
+
+    const formValue = this.profileForm.getRawValue();
+    const firstName = String(formValue.firstName ?? '').trim();
+    const lastName = String(formValue.lastName ?? '').trim();
+
+    this.savingProfile = true;
+    this.profileSaveMessage = '';
+
+    this.userService.updateUser(currentUser.id, {
+      firstName,
+      lastName,
+      displayName: `${firstName} ${lastName}`.trim(),
+      profilePictureUrl: currentUser.profilePictureUrl,
+    }).subscribe({
+      next: () => {
+        const updatedUser = {
+          ...currentUser,
+          firstName,
+          lastName,
+        };
+
+        this.user = updatedUser;
+        this.authService.updateCurrentUser(updatedUser);
+        this.profileSaveMessage = 'Profil mis a jour avec succes.';
+        this.savingProfile = false;
+      },
+      error: () => {
+        this.profileSaveMessage = 'La sauvegarde du profil a echoue.';
+        this.savingProfile = false;
+      }
+    });
+  }
+
+  loadFavoriteProducts(): void {
+    this.favoriteProducts = this.favoritesService.getFavorites().map((product) => this.normalizeProduct(product));
+  }
+
+  removeFavorite(product: Product): void {
+    this.favoritesService.removeFavorite(product.id);
+    this.loadFavoriteProducts();
+    this.profileSaveMessage = 'Produit retire des favoris.';
+  }
+
+  addFavoriteToCart(product: Product): void {
+    this.cartService.addProduct(product);
+    this.profileSaveMessage = 'Produit favori ajoute au panier.';
   }
 
   get totalPoints(): number {

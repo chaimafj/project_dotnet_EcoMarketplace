@@ -27,6 +27,9 @@ export class SellerDashboardComponent implements OnInit {
   loading = false;
   products: Product[] = [];
   sellerSales: SellerSale[] = [];
+  salesMessage = '';
+  salesMessageType: 'success' | 'error' = 'success';
+  confirmingSaleIds: Record<number, boolean> = {};
   imageIndexes: Record<string, number> = {};
   productImagePreviews: string[] = [];
   private readonly fallbackImage = 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=900&q=80';
@@ -101,6 +104,7 @@ export class SellerDashboardComponent implements OnInit {
     this.transactionService.getBySeller(Number(currentUser.id)).subscribe({
       next: (sales) => {
         this.sellerSales = sales ?? [];
+        this.salesMessage = '';
         this.refreshSalesData();
       },
       error: () => {
@@ -108,6 +112,57 @@ export class SellerDashboardComponent implements OnInit {
         this.refreshSalesData();
       }
     });
+  }
+
+  confirmPendingSale(sale: SellerSale): void {
+    const sellerId = Number(this.authService.getCurrentUser()?.id ?? 0);
+    if (!sellerId || !sale?.id || !this.isPendingSale(sale)) return;
+
+    this.salesMessage = '';
+    this.confirmingSaleIds[sale.id] = true;
+
+    this.transactionService.updateSaleStatus(sellerId, sale.id, { status: 'completed' }).subscribe({
+      next: () => {
+        this.sellerSales = this.sellerSales.map((currentSale) =>
+          currentSale.id === sale.id
+            ? { ...currentSale, status: 'completed' }
+            : currentSale
+        );
+        this.refreshSalesData();
+        this.salesMessageType = 'success';
+        this.salesMessage = `Commande #${sale.id} confirmee avec succes.`;
+        delete this.confirmingSaleIds[sale.id];
+      },
+      error: () => {
+        this.salesMessageType = 'error';
+        this.salesMessage = `Impossible de confirmer la commande #${sale.id}.`;
+        delete this.confirmingSaleIds[sale.id];
+      }
+    });
+  }
+
+  isPendingSale(sale: SellerSale): boolean {
+    return String(sale?.status || '').toLowerCase() === 'pending';
+  }
+
+  isConfirmingSale(saleId: number): boolean {
+    return !!this.confirmingSaleIds[saleId];
+  }
+
+  getSaleStatusLabel(status: string): string {
+    const normalized = String(status || '').toLowerCase();
+    if (normalized === 'completed') return 'Confirmee';
+    if (normalized === 'pending') return 'En attente';
+    if (normalized === 'failed' || normalized === 'refunded') return 'Annulee';
+    return status;
+  }
+
+  getSaleStatusClass(status: string): string {
+    const normalized = String(status || '').toLowerCase();
+    if (normalized === 'completed') return 'status-badge completed';
+    if (normalized === 'pending') return 'status-badge pending';
+    if (normalized === 'failed' || normalized === 'refunded') return 'status-badge failed';
+    return 'status-badge';
   }
 
   loadMyProducts(): void {
@@ -326,6 +381,34 @@ export class SellerDashboardComponent implements OnInit {
     return this.sellerSales.reduce((sum, s) => sum + Number(s.totalPrice || 0), 0);
   }
 
+  get completedSalesCount(): number {
+    return this.sellerSales.filter((sale) => String(sale.status || '').toLowerCase() === 'completed').length;
+  }
+
+  get pendingSalesCount(): number {
+    return this.sellerSales.filter((sale) => String(sale.status || '').toLowerCase() === 'pending').length;
+  }
+
+  get confirmationRate(): number {
+    if (!this.sellerSales.length) return 0;
+    return Math.round((this.completedSalesCount / this.sellerSales.length) * 100);
+  }
+
+  get averageSalesPerProduct(): number {
+    if (!this.totalProducts) return 0;
+    return this.totalSales / this.totalProducts;
+  }
+
+  get completedRevenueLabel(): string {
+    const completedSales = this.sellerSales.filter((sale) => String(sale.status || '').toLowerCase() === 'completed');
+    return this.formatCurrencyTotals(this.buildCurrencyTotals(completedSales));
+  }
+
+  get pendingRevenueLabel(): string {
+    const pendingSales = this.sellerSales.filter((sale) => String(sale.status || '').toLowerCase() === 'pending');
+    return this.formatCurrencyTotals(this.buildCurrencyTotals(pendingSales));
+  }
+
   get totalRevenueLabel(): string {
     return this.formatCurrencyTotals(this.buildCurrencyTotals(this.sellerSales));
   }
@@ -433,8 +516,10 @@ export class SellerDashboardComponent implements OnInit {
         return d.getFullYear() === year && d.getMonth() === month;
       });
 
-      const unitsSold = monthSales.reduce((sum, sale) => sum + Number(sale.quantity || 0), 0);
-      const totalsByCurrency = this.buildCurrencyTotals(monthSales);
+      const confirmedMonthSales = monthSales.filter((sale) => String(sale.status || '').toLowerCase() === 'completed');
+
+      const unitsSold = confirmedMonthSales.reduce((sum, sale) => sum + Number(sale.quantity || 0), 0);
+      const totalsByCurrency = this.buildCurrencyTotals(confirmedMonthSales);
 
       return {
         month: this.getMonthLabel(month),

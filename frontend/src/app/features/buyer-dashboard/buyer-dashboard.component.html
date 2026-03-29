@@ -59,52 +59,121 @@
     <ng-container *ngIf="currentTab === 'profile'">
       <div class="content-section">
         <h2>Mon Profil</h2>
-        <div class="profile-grid profile-grid-main">
-          <div class="profile-card">
-            <label>Nom</label>
-            <p>{{ buyerName }}</p>
-          </div>
-          <div class="profile-card">
-            <label>Email</label>
+        <div class="buyer-profile-layout">
+          <aside class="profile-identity-card">
+            <div class="identity-avatar">{{ buyerName | slice:0:1 }}</div>
+            <h3>{{ buyerName }}</h3>
             <p>{{ user?.email }}</p>
-          </div>
-          <div class="profile-card">
-            <label>Type de Compte</label>
-            <p><span class="badge badge-primary">Acheteur</span></p>
-          </div>
-          <div class="profile-card">
-            <label>Niveau actuel</label>
-            <p>{{ ecoLevel }}</p>
-          </div>
-          <div class="profile-card">
-            <label>Score Écologique</label>
-            <p>{{ ecoScore }}/100</p>
-          </div>
-          <div class="profile-card">
-            <label>ÉcoPoints Totaux</label>
-            <p>{{ totalPoints }} pts</p>
-          </div>
-        </div>
+            <span class="identity-role">Acheteur</span>
 
-        <div class="profile-grid profile-grid-secondary">
-          <div class="profile-card emphasis-card">
-            <label>Commandes complétées</label>
-            <p>{{ completedOrdersCount }}</p>
-          </div>
-          <div class="profile-card emphasis-card">
-            <label>Dépense moyenne</label>
-            <p>{{ formatPriceDT(averageOrderValue) }}</p>
-          </div>
-          <div class="profile-card progress-card">
-            <label>Progression éco</label>
-            <div class="eco-progress-bar">
-              <div class="eco-progress-fill" [style.width.%]="ecoProgress"></div>
+            <div class="identity-metrics">
+              <div class="metric-row">
+                <span>Niveau</span>
+                <strong>{{ ecoLevel }}</strong>
+              </div>
+              <div class="metric-row">
+                <span>Score éco</span>
+                <strong>{{ ecoScore }}/100</strong>
+              </div>
+              <div class="metric-row">
+                <span>ÉcoPoints</span>
+                <strong>{{ totalPoints }} pts</strong>
+              </div>
             </div>
-            <p>{{ ecoProgress }}% vers le niveau maximal</p>
+          </aside>
+
+          <div class="profile-main-area">
+            <div class="profile-hero-note">
+              <span class="hero-chip">Compte acheteur</span>
+              <p>Gardez vos informations a jour pour une experience d'achat plus fluide.</p>
+            </div>
+
+            <div class="profile-kpi-grid">
+              <article class="kpi-card">
+                <span class="kpi-label">Commandes complétées</span>
+                <strong class="kpi-value">{{ completedOrdersCount }}</strong>
+              </article>
+              <article class="kpi-card">
+                <span class="kpi-label">Dépense moyenne</span>
+                <strong class="kpi-value">{{ formatPriceDT(averageOrderValue) }}</strong>
+              </article>
+              <article class="kpi-card kpi-progress">
+                <span class="kpi-label">Progression éco</span>
+                <div class="eco-progress-bar">
+                  <div class="eco-progress-fill" [style.width.%]="ecoProgress"></div>
+                </div>
+                <strong class="kpi-value">{{ ecoProgress }}% vers le niveau maximal</strong>
+              </article>
+            </div>
+
+            <form class="profile-edit-panel" [formGroup]="profileForm" (ngSubmit)="saveProfile()" novalidate>
+              <div class="edit-panel-head">
+                <h3>Modifier mes informations</h3>
+                <span class="edit-panel-sub">Les changements sont enregistres immediatement.</span>
+              </div>
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label">Prenom</label>
+                  <input class="form-control" formControlName="firstName" type="text" placeholder="Prenom">
+                  <small class="text-danger" *ngIf="profileForm.controls.firstName.touched && profileForm.controls.firstName.invalid">
+                    Minimum 2 caracteres.
+                  </small>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Nom</label>
+                  <input class="form-control" formControlName="lastName" type="text" placeholder="Nom">
+                  <small class="text-danger" *ngIf="profileForm.controls.lastName.touched && profileForm.controls.lastName.invalid">
+                    Minimum 2 caracteres.
+                  </small>
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label">Email</label>
+                  <input class="form-control" formControlName="email" type="email" readonly>
+                </div>
+              </div>
+
+              <div *ngIf="profileSaveMessage" class="alert mt-3" [ngClass]="profileSaveMessage.includes('succes') ? 'alert-success' : 'alert-danger'">
+                {{ profileSaveMessage }}
+              </div>
+
+              <div class="edit-panel-actions">
+                <button class="btn btn-success" type="submit" [disabled]="savingProfile">
+                  {{ savingProfile ? 'Enregistrement...' : 'Enregistrer les modifications' }}
+                </button>
+              </div>
+            </form>
+
+            <section class="favorite-products-panel">
+              <div class="favorites-head">
+                <h3>Mes produits favoris</h3>
+                <span>{{ favoriteProducts.length }} sauvegardes</span>
+              </div>
+
+              <div *ngIf="favoriteProducts.length === 0" class="empty-state compact">
+                <p>Aucun favori pour le moment. Ajoutez des produits avec l etoile dans la marketplace.</p>
+              </div>
+
+              <div *ngIf="favoriteProducts.length > 0" class="favorite-products-grid">
+                <article class="favorite-card" *ngFor="let product of favoriteProducts">
+                  <img [src]="getRecommendedImage(product)" [alt]="product.title" (error)="onImageError($event)">
+                  <div class="favorite-body">
+                    <h4>{{ product.title }}</h4>
+                    <p>{{ getRecommendedDescription(product) }}</p>
+                    <div class="favorite-meta">
+                      <strong>{{ formatPriceDT(product.price) }}</strong>
+                      <span>EcoScore {{ product.ecoScore }}</span>
+                    </div>
+                    <div class="favorite-actions">
+                      <a class="btn btn-sm btn-outline-success" [routerLink]="['/product', product.id]">Voir details</a>
+                      <button type="button" class="btn btn-sm btn-buy" (click)="addFavoriteToCart(product)">Ajouter panier</button>
+                      <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeFavorite(product)">Retirer</button>
+                    </div>
+                  </div>
+                </article>
+              </div>
+            </section>
           </div>
         </div>
-
-        <a class="btn btn-secondary mt-4" routerLink="/profile">Modifier mon profil</a>
       </div>
     </ng-container>
 
@@ -230,22 +299,22 @@
         <div *ngIf="!loading && recommendedProducts.length > 0" class="products-grid">
           <div class="product-card" *ngFor="let product of recommendedProducts">
             <div class="product-image">
-              <img [src]="product.image || 'assets/placeholder.png'" 
+              <img [src]="getRecommendedImage(product)" 
                    [alt]="product.title" 
-                   onerror="this.src='assets/placeholder.png'">
+                   (error)="onImageError($event)">
               <div class="eco-badge" *ngIf="product.ecoScore">
                 {{ product.ecoScore }}
               </div>
             </div>
             <div class="product-info">
               <h4>{{ product.title }}</h4>
-              <p class="description">{{ product.description | slice:0:60 }}...</p>
+              <p class="description">{{ getRecommendedDescription(product) }}</p>
               <div class="product-meta">
                 <span class="price"><strong>{{ formatPriceDT(product.price) }}</strong></span>
                 <span class="seller">par {{ product.sellerName }}</span>
               </div>
               <div class="d-flex gap-2 mt-2">
-                <button class="btn btn-sm btn-primary flex-fill" routerLink="/product/{{ product.id }}">
+                <button class="btn btn-sm btn-primary flex-fill" [routerLink]="['/product', product.id]">
                   Voir détails
                 </button>
                 <button class="btn btn-sm btn-outline-success flex-fill" (click)="addRecommendedToCart(product)">
