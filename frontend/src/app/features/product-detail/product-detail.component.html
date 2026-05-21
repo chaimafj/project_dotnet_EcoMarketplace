@@ -1,19 +1,21 @@
 <div class="container mt-4">
-  <div *ngIf="message" class="alert alert-success border-0 shadow-sm">
-    {{ message }}
-  </div>
+  @if (message) {
+    <div class="alert alert-success border-0 shadow-sm">{{ message }}</div>
+  }
 
-  <div *ngIf="loading" class="text-center py-5">
-    <div class="spinner-border text-success" role="status">
-      <span class="visually-hidden">Chargement...</span>
+  @if (loading) {
+    <div class="text-center py-5">
+      <div class="spinner-border text-success" role="status">
+        <span class="visually-hidden">Chargement...</span>
+      </div>
     </div>
-  </div>
+  }
 
-  <div *ngIf="!loading && !product" class="alert alert-warning">
-    Produit introuvable.
-  </div>
+  @if (!loading && !product) {
+    <div class="alert alert-warning">Produit introuvable.</div>
+  }
 
-  <div *ngIf="!loading && product">
+  @if (!loading && product) {
     <nav aria-label="breadcrumb" class="mb-3">
       <ol class="breadcrumb">
         <li class="breadcrumb-item"><a [routerLink]="['/products']">Marketplace</a></li>
@@ -22,7 +24,6 @@
     </nav>
 
     <div class="row g-4">
-      <!-- Image -->
       <div class="col-md-6">
         <div class="product-gallery shadow-sm">
           <img
@@ -31,39 +32,34 @@
             class="img-fluid rounded"
             [alt]="product.title"
             style="width:100%; max-height:420px; object-fit:cover;">
-          <button *ngIf="hasMultipleImages()" type="button" class="gallery-nav prev" (click)="previousImage()">‹</button>
-          <button *ngIf="hasMultipleImages()" type="button" class="gallery-nav next" (click)="nextImage()">›</button>
-          <div *ngIf="hasMultipleImages()" class="gallery-counter">{{ currentImageIndex + 1 }}/{{ product.images?.length }}</div>
+          @if (hasMultipleImages()) {
+            <button type="button" class="gallery-nav prev" (click)="previousImage()">‹</button>
+            <button type="button" class="gallery-nav next" (click)="nextImage()">›</button>
+            <div class="gallery-counter">{{ currentImageIndex + 1 }}/{{ product.images?.length }}</div>
+          }
         </div>
 
-        <div *ngIf="hasMultipleImages()" class="gallery-thumbs mt-3">
-          <button
-            type="button"
-            class="thumb-btn"
-            *ngFor="let image of product.images; let idx = index"
-            [class.active]="idx === currentImageIndex"
-            (click)="selectImage(idx)">
-            <img [src]="image" [alt]="product.title + ' ' + (idx + 1)" (error)="onImageError($event)">
-          </button>
-        </div>
+        @if (hasMultipleImages()) {
+          <div class="gallery-thumbs mt-3">
+            @for (image of product.images; track image; let idx = $index) {
+              <button type="button" class="thumb-btn" [class.active]="idx === currentImageIndex" (click)="selectImage(idx)">
+                <img [src]="image" [alt]="product.title + ' ' + (idx + 1)" (error)="onImageError($event)">
+              </button>
+            }
+          </div>
+        }
       </div>
 
-      <!-- Details -->
       <div class="col-md-6">
         <h2>{{ product.title }}</h2>
         <h4 class="text-success">{{ formatPriceWithCurrency(product.price, product.currency) }}</h4>
 
-        <!-- EcoScore badge -->
         <div class="mb-3">
-          <span
-            class="badge fs-6 me-2"
-            [ngClass]="{
-              'bg-success': product.ecoScore >= 80,
-              'bg-warning text-dark': product.ecoScore >= 50 && product.ecoScore < 80,
-              'bg-danger': product.ecoScore < 50
-            }">
-            EcoScore {{ product.ecoScore }}
-          </span>
+          <span class="badge fs-6 me-2" [ngClass]="{
+            'bg-success': product.ecoScore >= 80,
+            'bg-warning text-dark': product.ecoScore >= 50 && product.ecoScore < 80,
+            'bg-danger': product.ecoScore < 50
+          }">EcoScore {{ product.ecoScore }}</span>
           <span class="badge bg-secondary me-1">{{ product.category }}</span>
           <span class="badge bg-info text-dark">{{ product.condition }}</span>
         </div>
@@ -71,34 +67,22 @@
         <p class="text-muted">{{ product.description }}</p>
 
         <ul class="list-group list-group-flush mb-3">
-          <li class="list-group-item d-flex justify-content-between">
-            <span>Matériau</span><strong>{{ product.material }}</strong>
-          </li>
-          <li class="list-group-item d-flex justify-content-between">
-            <span>Recyclé</span><strong>{{ product.isRecycled ? 'Oui' : 'Non' }}</strong>
-          </li>
-          <li class="list-group-item d-flex justify-content-between">
-            <span>Durable</span><strong>{{ product.isSustainable ? 'Oui' : 'Non' }}</strong>
-          </li>
-          <li class="list-group-item d-flex justify-content-between">
-            <span>Pourcentage recyclé</span><strong>{{ product.recycledPercentage }}%</strong>
-          </li>
-          <li class="list-group-item d-flex justify-content-between">
-            <span>Empreinte carbone</span><strong>{{ product.carbonFootprint }} kg CO₂</strong>
-          </li>
-          <li class="list-group-item d-flex justify-content-between">
-            <span>Localisation</span><strong>{{ product.location }}</strong>
-          </li>
-          <li class="list-group-item d-flex justify-content-between">
-            <span>Vendeur</span><strong>{{ product.sellerName }}</strong>
-          </li>
+          <li class="list-group-item d-flex justify-content-between"><span>Matériau</span><strong>{{ product.material }}</strong></li>
+          <li class="list-group-item d-flex justify-content-between"><span>Recyclé</span><strong>{{ product.isRecycled ? 'Oui' : 'Non' }}</strong></li>
+          <li class="list-group-item d-flex justify-content-between"><span>Durable</span><strong>{{ product.isSustainable ? 'Oui' : 'Non' }}</strong></li>
+          <li class="list-group-item d-flex justify-content-between"><span>Pourcentage recyclé</span><strong>{{ product.recycledPercentage }}%</strong></li>
+          <li class="list-group-item d-flex justify-content-between"><span>Empreinte carbone</span><strong>{{ product.carbonFootprint }} kg CO₂</strong></li>
+          <li class="list-group-item d-flex justify-content-between"><span>Localisation</span><strong>{{ product.location }}</strong></li>
+          <li class="list-group-item d-flex justify-content-between"><span>Vendeur</span><strong>{{ product.sellerName }}</strong></li>
         </ul>
 
         <div class="d-grid gap-2">
-          <button *ngIf="canShowBuyAction()" class="btn btn-success btn-lg" (click)="buyNow()">Acheter maintenant</button>
+          @if (canShowBuyAction()) {
+            <button class="btn btn-success btn-lg" (click)="buyNow()">Acheter maintenant</button>
+          }
           <button class="btn btn-outline-secondary" (click)="contactSeller()">Contacter le vendeur</button>
         </div>
       </div>
     </div>
-  </div>
+  }
 </div>

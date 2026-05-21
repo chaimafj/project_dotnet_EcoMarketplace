@@ -1,173 +1,286 @@
 <section class="container py-4">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h2 class="mb-0">Mon panier</h2>
-    <a class="btn btn-outline-secondary btn-sm" [routerLink]="['/products']">Continuer mes achats</a>
+
+    <a class="btn btn-outline-secondary btn-sm" [routerLink]="['/products']">
+      Continuer mes achats
+    </a>
   </div>
 
-  <div *ngIf="message" class="alert alert-info">
-    {{ message }}
-  </div>
-
-  <div *ngIf="items.length === 0" class="alert alert-light border">
-    Votre panier est vide.
-  </div>
-
-  <div *ngIf="items.length === 0" class="mt-3">
-    <button type="button" class="btn btn-success" [disabled]="true">
-      Ajoutez un produit au panier
-    </button>
-  </div>
-
-  <div *ngIf="items.length > 0" class="row g-3">
-    <div class="col-12" *ngFor="let item of items">
-      <div class="card border-0 shadow-sm">
-        <div class="card-body d-flex flex-wrap align-items-center gap-3">
-          <img [src]="item.image" [alt]="item.title" class="thumb" />
-
-          <div class="flex-grow-1">
-            <h5 class="mb-1">{{ item.title }}</h5>
-            <small class="text-muted">Vendeur: {{ item.sellerName }}</small>
-            <div class="text-muted small">{{ formatPriceDT(item.price) }} / unité</div>
-          </div>
-
-          <div class="d-flex align-items-center gap-2">
-            <button class="btn btn-outline-secondary btn-sm" (click)="decrease(item)">-</button>
-            <span class="qty">{{ item.quantity }}</span>
-            <button class="btn btn-outline-secondary btn-sm" (click)="increase(item)">+</button>
-          </div>
-
-          <div class="text-end">
-            <div class="fw-semibold">{{ formatPriceDT(item.price * item.quantity) }}</div>
-            <button class="btn btn-link text-danger p-0" (click)="remove(item)">Retirer</button>
-          </div>
-        </div>
-      </div>
+  @if (message) {
+    <div class="alert alert-info">
+      {{ message }}
     </div>
+  }
 
-    <div class="col-12">
-      <div class="card border-0 shadow-sm">
-        <div class="card-body">
-          <h5 class="mb-3">Formulaire de commande</h5>
+  @if (items.length === 0) {
+    <div class="alert alert-light border">Votre panier est vide.</div>
 
-          <form [formGroup]="orderForm" class="row g-3" novalidate>
-            <div class="col-md-6">
-              <label class="form-label">Nom complet</label>
-              <input type="text" class="form-control" formControlName="fullName" placeholder="Votre nom complet">
-              <small class="text-danger" *ngIf="orderForm.get('fullName')?.touched && orderForm.get('fullName')?.invalid">
-                Nom complet obligatoire.
-              </small>
-            </div>
+    <div class="mt-3">
+      <button type="button" class="btn btn-success" [disabled]="true">
+        Ajoutez un produit au panier
+      </button>
+    </div>
+  }
 
-            <div class="col-md-6">
-              <label class="form-label">Email (profil)</label>
-              <input type="text" class="form-control" formControlName="email" readonly>
-            </div>
+  @if (items.length > 0) {
+    <div class="row g-3">
+      @for (item of items; track item.productId)  {
+        <div class="col-12">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body d-flex flex-wrap align-items-center gap-3">
+              <img [src]="item.image" [alt]="item.title" class="thumb" />
 
-            <div class="col-md-6">
-              <label class="form-label">Téléphone</label>
-              <input type="text" class="form-control" formControlName="phone" placeholder="Ex: 22123456">
-              <small class="text-danger" *ngIf="orderForm.get('phone')?.touched && orderForm.get('phone')?.invalid">
-                Téléphone obligatoire.
-              </small>
-            </div>
+              <div class="flex-grow-1">
+                <h5 class="mb-1">{{ item.title }}</h5>
 
-            <div class="col-12">
-              <label class="form-label">Adresse</label>
-              <input type="text" class="form-control" formControlName="address" placeholder="Rue, numéro, quartier...">
-              <small class="text-danger" *ngIf="orderForm.get('address')?.touched && orderForm.get('address')?.invalid">
-                Adresse obligatoire.
-              </small>
-            </div>
+                <small class="text-muted"> Vendeur: {{ item.sellerName }} </small>
 
-            <div class="col-md-6">
-              <label class="form-label">Ville</label>
-              <input type="text" class="form-control" formControlName="city" placeholder="Votre ville">
-              <small class="text-danger" *ngIf="orderForm.get('city')?.touched && orderForm.get('city')?.invalid">
-                Ville obligatoire.
-              </small>
-            </div>
+                <div class="text-muted small">{{ formatPriceDT(item.price) }} / unité</div>
+              </div>
 
-            <div class="col-md-6">
-              <label class="form-label">Code postal</label>
-              <input type="text" class="form-control" formControlName="postalCode" placeholder="Ex: 1000">
-              <small class="text-danger" *ngIf="orderForm.get('postalCode')?.touched && orderForm.get('postalCode')?.invalid">
-                Code postal obligatoire.
-              </small>
-            </div>
+              <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-outline-secondary btn-sm" (click)="decrease(item)">-</button>
 
-            <div class="col-md-6">
-              <label class="form-label">Mode de paiement</label>
-              <select class="form-select" formControlName="paymentMethod">
-                <option value="CashOnDelivery">Paiement à la livraison</option>
-                <option value="Card">Carte bancaire</option>
-                <option value="BankTransfer">Virement bancaire</option>
-              </select>
-            </div>
+                <span class="qty">{{ item.quantity }}</span>
 
-            <div class="col-12" *ngIf="showCardPaymentFields()">
-              <div class="border rounded p-3 bg-light">
-                <h6 class="mb-3">Informations de paiement</h6>
+                <button class="btn btn-outline-secondary btn-sm" (click)="increase(item)">+</button>
+              </div>
 
-                <div class="row g-3">
-                  <div class="col-md-6">
-                    <label class="form-label">Numéro de carte</label>
-                    <input type="text" class="form-control" formControlName="cardNumber" placeholder="Ex: 1234567812345678">
-                    <small class="text-danger" *ngIf="orderForm.get('cardNumber')?.touched && orderForm.get('cardNumber')?.invalid">
-                      Numéro de carte invalide.
-                    </small>
-                  </div>
-
-                  <div class="col-md-6">
-                    <label class="form-label">Nom sur la carte</label>
-                    <input type="text" class="form-control" formControlName="cardHolder" placeholder="Nom du titulaire">
-                    <small class="text-danger" *ngIf="orderForm.get('cardHolder')?.touched && orderForm.get('cardHolder')?.invalid">
-                      Nom du titulaire obligatoire.
-                    </small>
-                  </div>
-
-                  <div class="col-md-4">
-                    <label class="form-label">Mois d'expiration (MM)</label>
-                    <input type="text" class="form-control" formControlName="expiryMonth" placeholder="MM">
-                    <small class="text-danger" *ngIf="orderForm.get('expiryMonth')?.touched && orderForm.get('expiryMonth')?.invalid">
-                      Mois invalide (01 à 12).
-                    </small>
-                  </div>
-
-                  <div class="col-md-4">
-                    <label class="form-label">Année d'expiration (AA)</label>
-                    <input type="text" class="form-control" formControlName="expiryYear" placeholder="AA">
-                    <small class="text-danger" *ngIf="orderForm.get('expiryYear')?.touched && orderForm.get('expiryYear')?.invalid">
-                      Année invalide.
-                    </small>
-                  </div>
-
-                  <div class="col-md-4">
-                    <label class="form-label">CVV</label>
-                    <input type="password" class="form-control" formControlName="cvv" placeholder="CVV" maxlength="4">
-                    <small class="text-danger" *ngIf="orderForm.get('cvv')?.touched && orderForm.get('cvv')?.invalid">
-                      CVV invalide.
-                    </small>
-                  </div>
+              <div class="text-end">
+                <div class="fw-semibold">
+                  {{ formatPriceDT(item.price * item.quantity) }}
                 </div>
+
+                <button class="btn btn-link text-danger p-0" (click)="remove(item)">Retirer</button>
               </div>
             </div>
-          </form>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-12">
-      <div class="card border-0 shadow-sm">
-        <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3">
-          <div>
-            <div class="text-muted">Total</div>
-            <div class="h4 mb-0">{{ formatPriceDT(total) }}</div>
           </div>
-          <button type="button" class="btn btn-success" [disabled]="!canCheckout()" (click)="checkout()">
-            {{ getCheckoutLabel() }}
-          </button>
+        </div>
+      }
+
+      <div class="col-12">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body">
+            <h5 class="mb-3">Formulaire de commande</h5>
+
+            <form [formGroup]="orderForm" class="row g-3" novalidate>
+              <div class="col-md-6">
+                <label class="form-label">Nom complet</label>
+
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="fullName"
+                  placeholder="Votre nom complet"
+                />
+
+                @if (orderForm.get('fullName')?.touched && orderForm.get('fullName')?.invalid) {
+                  <small class="text-danger"> Nom complet obligatoire. </small>
+                }
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label">Email (profil)</label>
+
+                <input type="text" class="form-control" formControlName="email" readonly />
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label">Téléphone</label>
+
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="phone"
+                  placeholder="Ex: 22123456"
+                />
+
+                @if (orderForm.get('phone')?.touched && orderForm.get('phone')?.invalid) {
+                  <small class="text-danger"> Téléphone obligatoire. </small>
+                }
+              </div>
+
+              <div class="col-12">
+                <label class="form-label">Adresse</label>
+
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="address"
+                  placeholder="Rue, numéro, quartier..."
+                />
+
+                @if (orderForm.get('address')?.touched && orderForm.get('address')?.invalid) {
+                  <small class="text-danger"> Adresse obligatoire. </small>
+                }
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label">Ville</label>
+
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="city"
+                  placeholder="Votre ville"
+                />
+
+                @if (orderForm.get('city')?.touched && orderForm.get('city')?.invalid) {
+                  <small class="text-danger"> Ville obligatoire. </small>
+                }
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label">Code postal</label>
+
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="postalCode"
+                  placeholder="Ex: 1000"
+                />
+
+                @if (orderForm.get('postalCode')?.touched && orderForm.get('postalCode')?.invalid) {
+                  <small class="text-danger"> Code postal obligatoire. </small>
+                }
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label">Mode de paiement</label>
+
+                <select class="form-select" formControlName="paymentMethod">
+                  <option value="CashOnDelivery">Paiement à la livraison</option>
+
+                  <option value="Card">Carte bancaire</option>
+
+                  <option value="BankTransfer">Virement bancaire</option>
+                </select>
+              </div>
+
+              @if (showCardPaymentFields()) {
+                <div class="col-12">
+                  <div class="border rounded p-3 bg-light">
+                    <h6 class="mb-3">Informations de paiement</h6>
+
+                    <div class="row g-3">
+                      <div class="col-md-6">
+                        <label class="form-label"> Numéro de carte </label>
+
+                        <input
+                          type="text"
+                          class="form-control"
+                          formControlName="cardNumber"
+                          placeholder="Ex: 1234567812345678"
+                        />
+
+                        @if (
+                          orderForm.get('cardNumber')?.touched &&
+                          orderForm.get('cardNumber')?.invalid
+                        ) {
+                          <small class="text-danger"> Numéro de carte invalide. </small>
+                        }
+                      </div>
+
+                      <div class="col-md-6">
+                        <label class="form-label"> Nom sur la carte </label>
+
+                        <input
+                          type="text"
+                          class="form-control"
+                          formControlName="cardHolder"
+                          placeholder="Nom du titulaire"
+                        />
+
+                        @if (
+                          orderForm.get('cardHolder')?.touched &&
+                          orderForm.get('cardHolder')?.invalid
+                        ) {
+                          <small class="text-danger"> Nom du titulaire obligatoire. </small>
+                        }
+                      </div>
+
+                      <div class="col-md-4">
+                        <label class="form-label"> Mois d'expiration (MM) </label>
+
+                        <input
+                          type="text"
+                          class="form-control"
+                          formControlName="expiryMonth"
+                          placeholder="MM"
+                        />
+
+                        @if (
+                          orderForm.get('expiryMonth')?.touched &&
+                          orderForm.get('expiryMonth')?.invalid
+                        ) {
+                          <small class="text-danger"> Mois invalide (01 à 12). </small>
+                        }
+                      </div>
+
+                      <div class="col-md-4">
+                        <label class="form-label"> Année d'expiration (AA) </label>
+
+                        <input
+                          type="text"
+                          class="form-control"
+                          formControlName="expiryYear"
+                          placeholder="AA"
+                        />
+
+                        @if (
+                          orderForm.get('expiryYear')?.touched &&
+                          orderForm.get('expiryYear')?.invalid
+                        ) {
+                          <small class="text-danger"> Année invalide. </small>
+                        }
+                      </div>
+
+                      <div class="col-md-4">
+                        <label class="form-label">CVV</label>
+
+                        <input
+                          type="password"
+                          class="form-control"
+                          formControlName="cvv"
+                          placeholder="CVV"
+                          maxlength="4"
+                        />
+
+                        @if (orderForm.get('cvv')?.touched && orderForm.get('cvv')?.invalid) {
+                          <small class="text-danger"> CVV invalide. </small>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-12">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+              <div class="text-muted">Total</div>
+              <div class="h4 mb-0">
+                {{ formatPriceDT(total) }}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              class="btn btn-success"
+              [disabled]="!canCheckout()"
+              (click)="checkout()"
+            >
+              {{ getCheckoutLabel() }}
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  }
 </section>

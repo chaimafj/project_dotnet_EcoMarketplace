@@ -4,14 +4,16 @@
       <h1>Tableau de bord Vendeur</h1>
       <p class="subtitle">Gérez vos produits et analysez vos ventes</p>
 
-      <div class="seller-profile-mini" *ngIf="user">
-        <img [src]="sellerPhoto" [alt]="sellerName" class="seller-avatar">
-        <div class="seller-meta">
-          <strong>{{ sellerName }}</strong>
-          <span>{{ user?.email }}</span>
+      @if (user) {
+        <div class="seller-profile-mini">
+          <img [src]="sellerPhoto" [alt]="sellerName" class="seller-avatar" />
+          <div class="seller-meta">
+            <strong>{{ sellerName }}</strong>
+            <span>{{ user?.email }}</span>
+          </div>
+          <a class="btn btn-sm btn-light" [routerLink]="['/profile']">Modifier profil</a>
         </div>
-        <a class="btn btn-sm btn-light" [routerLink]="['/profile']">Modifier profil</a>
-      </div>
+      }
     </div>
     <div class="header-stats">
       <div class="stat-card">
@@ -29,71 +31,62 @@
     </div>
   </div>
 
-  <!-- Navigation Tabs -->
   <div class="dashboard-tabs">
-    <button 
-      class="tab-btn"
-      [class.active]="currentTab === 'add'"
-      (click)="setTab('add')">
-       Ajouter un produit
+    <button class="tab-btn" [class.active]="currentTab === 'add'" (click)="setTab('add')">
+      Ajouter un produit
     </button>
-    <button 
-      class="tab-btn"
-      [class.active]="currentTab === 'manage'"
-      (click)="setTab('manage')">
-       Gérer les produits
+    <button class="tab-btn" [class.active]="currentTab === 'manage'" (click)="setTab('manage')">
+      Gérer les produits
     </button>
-    <button 
-      class="tab-btn"
-      [class.active]="currentTab === 'sales'"
-      (click)="setTab('sales')">
-       Analyse des ventes
+    <button class="tab-btn" [class.active]="currentTab === 'sales'" (click)="setTab('sales')">
+      Analyse des ventes
     </button>
-    <button 
+    <button
       class="tab-btn"
       [class.active]="currentTab === 'environmental'"
-      (click)="setTab('environmental')">
-       Impact environnemental
+      (click)="setTab('environmental')"
+    >
+      Impact environnemental
     </button>
   </div>
 
-  <!-- Tab Content -->
   <div class="tab-content">
-    <!-- Ajouter un produit -->
-    <ng-container *ngIf="currentTab === 'add'">
+    @if (currentTab === 'add') {
       <div class="content-section">
         <h2>Ajouter un nouveau produit</h2>
-        
+
         <form [formGroup]="publishForm" (ngSubmit)="publishProduct()" class="publish-form">
           <div class="form-row">
             <div class="form-group">
               <label for="title">Titre du produit *</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 id="title"
                 class="form-input"
                 formControlName="title"
-                placeholder="Ex: Ordinateur reconditionné">
-              <small class="form-help" *ngIf="publishForm.get('title')?.hasError('required')">
-                Le titre est obligatoire
-              </small>
+                placeholder="Ex: Ordinateur reconditionné"
+              />
+              @if (publishForm.get('title')?.hasError('required')) {
+                <small class="form-help">Le titre est obligatoire</small>
+              }
             </div>
 
             <div class="form-group">
               <label for="price">Prix (DT) *</label>
               <div class="price-currency-row">
-                <input 
-                  type="number" 
+                <input
+                  type="number"
                   id="price"
                   class="form-input"
                   formControlName="price"
                   placeholder="0.00"
-                  step="0.01">
+                  step="0.01"
+                />
                 <span class="form-input currency-select">DT</span>
               </div>
-              <small class="form-help" *ngIf="publishForm.get('price')?.hasError('required')">
-                Le prix est obligatoire
-              </small>
+              @if (publishForm.get('price')?.hasError('required')) {
+                <small class="form-help">Le prix est obligatoire</small>
+              }
             </div>
           </div>
 
@@ -102,7 +95,9 @@
               <label for="category">Catégorie *</label>
               <select id="category" class="form-input" formControlName="category">
                 <option value="">Sélectionner une catégorie</option>
-                <option *ngFor="let cat of categories" [value]="cat.value">{{ cat.label }}</option>
+                @for (cat of categories; track cat.value) {
+                  <option [value]="cat.value">{{ cat.label }}</option>
+                }
               </select>
             </div>
 
@@ -110,7 +105,9 @@
               <label for="condition">État du produit *</label>
               <select id="condition" class="form-input" formControlName="condition">
                 <option value="">Sélectionner l'état</option>
-                <option *ngFor="let cond of conditions" [value]="cond.value">{{ cond.label }}</option>
+                @for (cond of conditions; track cond.value) {
+                  <option [value]="cond.value">{{ cond.label }}</option>
+                }
               </select>
             </div>
           </div>
@@ -119,54 +116,79 @@
             <label for="material">Matériau principal *</label>
             <select id="material" class="form-input" formControlName="material">
               <option value="">Selectionner un materiau</option>
-              <option *ngFor="let material of materials" [value]="material.value">{{ material.label }}</option>
+              @for (material of materials; track material.value) {
+                <option [value]="material.value">{{ material.label }}</option>
+              }
             </select>
-            <small class="form-help" *ngIf="publishForm.get('material')?.hasError('required')">
-              Le materiau est obligatoire
-            </small>
+            @if (publishForm.get('material')?.hasError('required')) {
+              <small class="form-help">Le materiau est obligatoire</small>
+            }
           </div>
 
-          <div class="form-group" *ngIf="publishForm.get('material')?.value === '__custom__'">
-            <label for="materialCustom">Précisez le matériau *</label>
-            <input
-              type="text"
-              id="materialCustom"
-              class="form-input"
-              formControlName="materialCustom"
-              placeholder="Ex: Aluminium, Acier, Verre...">
-          </div>
+          @if (publishForm.get('material')?.value === '__custom__') {
+            <div class="form-group">
+              <label for="materialCustom">Précisez le matériau *</label>
+              <input
+                type="text"
+                id="materialCustom"
+                class="form-input"
+                formControlName="materialCustom"
+                placeholder="Ex: Aluminium, Acier, Verre..."
+              />
+            </div>
+          }
 
           <div class="form-group">
             <label for="description">Description (minimum 10 caractères) *</label>
-            <textarea 
+            <textarea
               id="description"
               class="form-input"
               formControlName="description"
               placeholder="Décrivez votre produit en détail..."
-              rows="4"></textarea>
-            <small class="form-help" *ngIf="publishForm.get('description')?.hasError('required')">
-              La description est obligatoire (min 10 caractères)
-            </small>
+              rows="4"
+            ></textarea>
+            @if (publishForm.get('description')?.hasError('required')) {
+              <small class="form-help">La description est obligatoire (min 10 caractères)</small>
+            }
           </div>
 
-          <p class="text-muted">Le score éco est calculé automatiquement selon le matériau, la catégorie et l'état du produit.</p>
+          <p class="text-muted">
+            Le score éco est calculé automatiquement selon le matériau, la catégorie et l'état du
+            produit.
+          </p>
 
           <div class="form-group">
             <label>Photos réelles du produit (1 à 8)</label>
             <div class="photo-upload-box">
               <label class="btn btn-sm btn-secondary">
                 Choisir des photos
-                <input type="file" accept="image/*" multiple (change)="onProductPhotosChange($event)" hidden>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  (change)="onProductPhotosChange($event)"
+                  hidden
+                />
               </label>
               <small>Formats: JPG, PNG, WebP - max 8 Mo par image.</small>
             </div>
 
-            <div class="photo-grid" *ngIf="productImagePreviews.length">
-              <div class="photo-card" *ngFor="let photo of productImagePreviews; let i = index">
-                <img [src]="photo" [alt]="'Photo ' + (i + 1)">
-                <button type="button" class="btn btn-sm btn-danger w-100" (click)="removeProductPhoto(i)">Supprimer</button>
+            @if (productImagePreviews.length) {
+              <div class="photo-grid">
+                @for (photo of productImagePreviews; track photo; let i = $index) {
+                  <div class="photo-card">
+                    <img [src]="photo" [alt]="'Photo ' + (i + 1)" />
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-danger w-100"
+                      (click)="removeProductPhoto(i)"
+                    >
+                      Supprimer
+                    </button>
+                  </div>
+                }
               </div>
-            </div>
+            }
           </div>
 
           <div class="form-group">
@@ -176,113 +198,133 @@
               id="image"
               class="form-input"
               formControlName="image"
-              placeholder="https://...">
+              placeholder="https://..."
+            />
           </div>
 
-          <button type="submit" class="btn btn-primary btn-lg">
-            ✓ Publier le produit
-          </button>
+          <button type="submit" class="btn btn-primary btn-lg">✓ Publier le produit</button>
         </form>
       </div>
-    </ng-container>
+    }
 
-    <!-- Gérer les produits -->
-    <ng-container *ngIf="currentTab === 'manage'">
+    @if (currentTab === 'manage') {
       <div class="content-section">
         <h2>Mes produits en vente</h2>
-        
-        <div *ngIf="loading" class="text-center text-muted">
-          <p>Chargement de vos produits...</p>
-        </div>
 
-        <div *ngIf="!loading && products.length === 0" class="empty-state">
-          <p>Vous n'avez pas encore publié de produits.</p>
-          <button class="btn btn-primary" (click)="setTab('add')">
-             Ajouter un produit
-          </button>
-        </div>
+        @if (loading) {
+          <div class="text-center text-muted"><p>Chargement de vos produits...</p></div>
+        }
 
-        <div *ngIf="!loading && products.length > 0" class="products-grid">
-          <div class="product-card" *ngFor="let product of products">
-            <div class="product-image-wrap">
-              <img [src]="getCurrentProductImage(product)" 
-                   [alt]="product.title"
-                   [attr.onerror]="null">
-              <button *ngIf="showImageNavigation(product)" type="button" class="image-nav prev" (click)="previousImage(product, $event)">‹</button>
-              <button *ngIf="showImageNavigation(product)" type="button" class="image-nav next" (click)="nextImage(product, $event)">›</button>
-              <div *ngIf="showImageNavigation(product)" class="image-counter">
-                {{ getCurrentImagePosition(product) }}/{{ product.images?.length }}
-              </div>
-              <div class="eco-score-badge">{{ product.ecoScore }}</div>
-            </div>
-            
-            <div class="product-details">
-              <h3>{{ product.title }}</h3>
-              <p class="category-tag">{{ product.category }}</p>
-              
-              <div class="product-meta">
-                <span class="price">{{ formatPriceWithCurrency(product.price, product.currency) }}</span>
-                <span class="condition">{{ product.condition }}</span>
-              </div>
-
-              <div class="eco-info">
-                <span *ngIf="product.co2Saved"> {{ product.co2Saved }}kg CO2</span>
-                <span *ngIf="product.recycledPercentage"> {{ product.recycledPercentage }}%</span>
-              </div>
-
-              <div class="action-buttons">
-                <a class="btn btn-sm btn-outline-success" [routerLink]="['/product', product.id]">
-                  Voir details
-                </a>
-                <button class="btn btn-sm btn-secondary" (click)="editProduct(product)">
-                  ✏️ Éditer
-                </button>
-                <button class="btn btn-sm btn-danger" (click)="deleteProduct(product.id)">
-                  🗑️ Supprimer
-                </button>
-              </div>
-            </div>
+        @if (!loading && products.length === 0) {
+          <div class="empty-state">
+            <p>Vous n'avez pas encore publié de produits.</p>
+            <button class="btn btn-primary" (click)="setTab('add')">Ajouter un produit</button>
           </div>
-        </div>
-      </div>
-    </ng-container>
+        }
 
-    <!-- Analyse des ventes -->
-    <ng-container *ngIf="currentTab === 'sales'">
+        @if (!loading && products.length > 0) {
+          <div class="products-grid">
+            @for (product of products; track product.id) {
+              <div class="product-card">
+                <div class="product-image-wrap">
+                  <img
+                    [src]="getCurrentProductImage(product)"
+                    [alt]="product.title"
+                    [attr.onerror]="null"
+                  />
+                  @if (showImageNavigation(product)) {
+                    <button
+                      type="button"
+                      class="image-nav prev"
+                      (click)="previousImage(product, $event)"
+                    >
+                      ‹
+                    </button>
+                    <button
+                      type="button"
+                      class="image-nav next"
+                      (click)="nextImage(product, $event)"
+                    >
+                      ›
+                    </button>
+                    <div class="image-counter">
+                      {{ getCurrentImagePosition(product) }}/{{ product.images?.length }}
+                    </div>
+                  }
+                  <div class="eco-score-badge">{{ product.ecoScore }}</div>
+                </div>
+
+                <div class="product-details">
+                  <h3>{{ product.title }}</h3>
+                  <p class="category-tag">{{ product.category }}</p>
+
+                  <div class="product-meta">
+                    <span class="price">{{
+                      formatPriceWithCurrency(product.price, product.currency)
+                    }}</span>
+                    <span class="condition">{{ product.condition }}</span>
+                  </div>
+
+                  <div class="eco-info">
+                    @if (product.co2Saved) {
+                      <span>{{ product.co2Saved }}kg CO2</span>
+                    }
+                    @if (product.recycledPercentage) {
+                      <span>{{ product.recycledPercentage }}%</span>
+                    }
+                  </div>
+
+                  <div class="action-buttons">
+                    <a
+                      class="btn btn-sm btn-outline-success"
+                      [routerLink]="['/product', product.id]"
+                      >Voir details</a
+                    >
+                    <button class="btn btn-sm btn-secondary" (click)="editProduct(product)">
+                      ✏️ Éditer
+                    </button>
+                    <button class="btn btn-sm btn-danger" (click)="deleteProduct(product.id)">
+                      🗑️ Supprimer
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    @if (currentTab === 'sales') {
       <div class="content-section">
         <h2>Analyse des ventes</h2>
-        
+
         <div class="sales-summary">
           <div class="summary-card">
             <h3>Total Ventes</h3>
             <p class="summary-value">{{ totalSales }}</p>
             <p class="summary-desc">unités vendues</p>
           </div>
-
           <div class="summary-card">
             <h3>Chiffre d'Affaires</h3>
             <p class="summary-value">{{ totalRevenueLabel }}</p>
             <p class="summary-desc">revenus générés</p>
           </div>
-
           <div class="summary-card">
             <h3>Moyenne par Produit</h3>
-            <p class="summary-value">{{ averageSalesPerProduct | number:'1.1-1' }}</p>
+            <p class="summary-value">{{ averageSalesPerProduct | number: '1.1-1' }}</p>
             <p class="summary-desc">ventes par article</p>
           </div>
-
           <div class="summary-card">
             <h3>Commandes confirmées</h3>
             <p class="summary-value">{{ completedSalesCount }}</p>
             <p class="summary-desc">CA confirmé: {{ completedRevenueLabel }}</p>
           </div>
-
           <div class="summary-card summary-card-warning">
             <h3>En attente de confirmation</h3>
             <p class="summary-value">{{ pendingSalesCount }}</p>
             <p class="summary-desc">Valeur en attente: {{ pendingRevenueLabel }}</p>
           </div>
-
           <div class="summary-card summary-card-info">
             <h3>Taux de confirmation</h3>
             <p class="summary-value">{{ confirmationRate }}%</p>
@@ -290,9 +332,11 @@
           </div>
         </div>
 
-        <div *ngIf="salesMessage" class="sales-feedback" [ngClass]="salesMessageType === 'success' ? 'ok' : 'error'">
-          {{ salesMessage }}
-        </div>
+        @if (salesMessage) {
+          <div class="sales-feedback" [ngClass]="salesMessageType === 'success' ? 'ok' : 'error'">
+            {{ salesMessage }}
+          </div>
+        }
 
         <div class="sales-chart">
           <h3>Historique des ventes (3 derniers mois)</h3>
@@ -306,12 +350,16 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let data of salesData">
-                <td><strong>{{ data.month }}</strong></td>
-                <td>{{ data.sales }}</td>
-                <td>{{ data.revenueLabel }}</td>
-                <td>{{ data.averageLabel }}</td>
-              </tr>
+              @for (data of salesData; track data.month) {
+                <tr>
+                  <td>
+                    <strong>{{ data.month }}</strong>
+                  </td>
+                  <td>{{ data.sales }}</td>
+                  <td>{{ data.revenueLabel }}</td>
+                  <td>{{ data.averageLabel }}</td>
+                </tr>
+              }
             </tbody>
           </table>
         </div>
@@ -319,62 +367,69 @@
         <div class="sales-chart mt-4">
           <h3>Produits achetés par les acheteurs</h3>
 
-          <div *ngIf="sellerSales.length === 0" class="text-muted">
-            Aucune vente enregistrée pour le moment.
-          </div>
+          @if (sellerSales.length === 0) {
+            <div class="text-muted">Aucune vente enregistrée pour le moment.</div>
+          }
 
-          <table class="sales-table" *ngIf="sellerSales.length > 0">
-            <thead>
-              <tr>
-                <th>Produit</th>
-                <th>Acheteur</th>
-                <th>Quantité</th>
-                <th>Montant</th>
-                <th>Date</th>
-                <th>Statut</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let sale of sellerSales">
-                <td><strong>{{ sale.productName }}</strong></td>
-                <td>{{ sale.buyerName || ('Acheteur #' + sale.buyerId) }}</td>
-                <td>{{ sale.quantity }}</td>
-                <td>{{ formatPriceWithCurrency(sale.totalPrice, sale.currency) }}</td>
-                <td>{{ sale.purchasedAt | date:'dd/MM/yyyy HH:mm' }}</td>
-                <td>
-                  <span [class]="getSaleStatusClass(sale.status)">{{ getSaleStatusLabel(sale.status) }}</span>
-                </td>
-                <td>
-                  <button
-                    *ngIf="isPendingSale(sale)"
-                    class="btn btn-sm btn-primary"
-                    (click)="confirmPendingSale(sale)"
-                    [disabled]="isConfirmingSale(sale.id)">
-                    {{ isConfirmingSale(sale.id) ? 'Confirmation...' : 'Confirmer' }}
-                  </button>
-                  <span *ngIf="!isPendingSale(sale)" class="text-muted">-</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          @if (sellerSales.length > 0) {
+            <table class="sales-table">
+              <thead>
+                <tr>
+                  <th>Produit</th>
+                  <th>Acheteur</th>
+                  <th>Quantité</th>
+                  <th>Montant</th>
+                  <th>Date</th>
+                  <th>Statut</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (sale of sellerSales; track sale.id) {
+                  <tr>
+                    <td>
+                      <strong>{{ sale.productName }}</strong>
+                    </td>
+                    <td>{{ sale.buyerName || 'Acheteur #' + sale.buyerId }}</td>
+                    <td>{{ sale.quantity }}</td>
+                    <td>{{ formatPriceWithCurrency(sale.totalPrice, sale.currency) }}</td>
+                    <td>{{ sale.purchasedAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+                    <td>
+                      <span [class]="getSaleStatusClass(sale.status)">{{
+                        getSaleStatusLabel(sale.status)
+                      }}</span>
+                    </td>
+                    <td>
+                      @if (isPendingSale(sale)) {
+                        <button
+                          class="btn btn-sm btn-primary"
+                          (click)="confirmPendingSale(sale)"
+                          [disabled]="isConfirmingSale(sale.id)"
+                        >
+                          {{ isConfirmingSale(sale.id) ? 'Confirmation...' : 'Confirmer' }}
+                        </button>
+                      } @else {
+                        <span class="text-muted">-</span>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
         </div>
 
-        <div class="chart-placeholder">
-          <p> Graphique de tendances à venir</p>
-        </div>
+        <div class="chart-placeholder"><p>Graphique de tendances à venir</p></div>
       </div>
-    </ng-container>
+    }
 
-    <!-- Statistiques d'impact environnemental -->
-    <ng-container *ngIf="currentTab === 'environmental'">
+    @if (currentTab === 'environmental') {
       <div class="content-section">
         <div class="env-header">
           <h2>🌍 Impact environnemental</h2>
           <p class="env-subtitle">Suivez et améliorez l'empreinte écologique de votre catalogue</p>
         </div>
 
-        <!-- KPI Cards -->
         <div class="environmental-summary">
           <div class="env-card">
             <div class="env-card-icon"></div>
@@ -383,9 +438,14 @@
               <span class="metric-unit">/ {{ totalProducts }}</span>
             </div>
             <p class="metric-label">Produits Recyclés</p>
-            <p class="metric-desc">{{ totalProducts > 0 ? ((recyclableProductsCount / totalProducts) * 100 | number:'1.0-0') : 0 }}% de votre catalogue</p>
+            <p class="metric-desc">
+              {{
+                totalProducts > 0
+                  ? ((recyclableProductsCount / totalProducts) * 100 | number: '1.0-0')
+                  : 0
+              }}% de votre catalogue
+            </p>
           </div>
-
           <div class="env-card">
             <div class="env-card-icon"></div>
             <div class="env-metric">
@@ -395,7 +455,6 @@
             <p class="metric-label">Taux de Recyclage Moyen</p>
             <p class="metric-desc">Matériaux recyclés par produit</p>
           </div>
-
           <div class="env-card">
             <div class="env-card-icon"></div>
             <div class="env-metric">
@@ -405,7 +464,6 @@
             <p class="metric-label">Produits Durables</p>
             <p class="metric-desc">Labellisés éco-responsables</p>
           </div>
-
           <div class="env-card">
             <div class="env-card-icon"></div>
             <div class="env-metric">
@@ -413,11 +471,12 @@
               <span class="metric-unit">pts</span>
             </div>
             <p class="metric-label">EcoScore Moyen</p>
-            <p class="metric-desc">Niveau : <strong>{{ ecoScoreLevel }}</strong></p>
+            <p class="metric-desc">
+              Niveau : <strong>{{ ecoScoreLevel }}</strong>
+            </p>
           </div>
         </div>
 
-        <!-- EcoScore Gauge -->
         <div class="eco-score-section">
           <div class="eco-score-header">
             <h3>📊 Niveau EcoScore global</h3>
@@ -425,7 +484,11 @@
           </div>
           <div class="eco-score-bar-wrapper">
             <div class="eco-score-bar">
-              <div class="eco-score-fill" [style.width.%]="averageEcoScore" [ngClass]="ecoScoreLevelClass"></div>
+              <div
+                class="eco-score-fill"
+                [style.width.%]="averageEcoScore"
+                [ngClass]="ecoScoreLevelClass"
+              ></div>
             </div>
             <span class="eco-score-value">{{ averageEcoScore }}/100</span>
           </div>
@@ -437,45 +500,63 @@
           </div>
         </div>
 
-        <!-- Materials Breakdown -->
-        <div class="materials-section" *ngIf="materialBreakdown.length > 0">
-          <h3>🔩 Répartition par matériau</h3>
-          <div class="materials-grid">
-            <div class="material-pill" *ngFor="let m of materialBreakdown">
-              <span class="material-name">{{ m.material }}</span>
-              <span class="material-bar-wrap">
-                <span class="material-bar" [style.width.%]="m.percentage"></span>
-              </span>
-              <span class="material-stat">{{ m.count }} produit{{ m.count > 1 ? 's' : '' }} ({{ m.percentage }}%)</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Top Eco Products -->
-        <div class="top-products-section" *ngIf="topEcoProducts.length > 0">
-          <h3>🏆 Vos meilleurs articles écologiques</h3>
-          <div class="products-eco-list">
-            <div class="eco-product-row" *ngFor="let p of topEcoProducts; let i = index">
-              <span class="rank">#{{ i + 1 }}</span>
-              <span class="product-title" [title]="p.title">{{ p.title }}</span>
-              <div class="product-eco-bar">
-                <div class="product-eco-fill" [style.width.%]="p.ecoScore"
-                  [ngClass]="p.ecoScore >= 80 ? 'excellent' : p.ecoScore >= 60 ? 'good' : p.ecoScore >= 40 ? 'medium' : 'low'">
+        @if (materialBreakdown.length > 0) {
+          <div class="materials-section">
+            <h3>🔩 Répartition par matériau</h3>
+            <div class="materials-grid">
+              @for (m of materialBreakdown; track m.material) {
+                <div class="material-pill">
+                  <span class="material-name">{{ m.material }}</span>
+                  <span class="material-bar-wrap">
+                    <span class="material-bar" [style.width.%]="m.percentage"></span>
+                  </span>
+                  <span class="material-stat"
+                    >{{ m.count }} produit{{ m.count > 1 ? 's' : '' }} ({{ m.percentage }}%)</span
+                  >
                 </div>
-              </div>
-              <span class="product-score">{{ p.ecoScore }}/100</span>
-              <span class="product-recycled-badge" *ngIf="p.isRecycled"></span>
+              }
             </div>
           </div>
-        </div>
+        }
 
-        <!-- Dynamic Tip -->
+        @if (topEcoProducts.length > 0) {
+          <div class="top-products-section">
+            <h3>🏆 Vos meilleurs articles écologiques</h3>
+            <div class="products-eco-list">
+              @for (p of topEcoProducts; track p.title; let i = $index) {
+                <div class="eco-product-row">
+                  <span class="rank">#{{ i + 1 }}</span>
+                  <span class="product-title" [title]="p.title">{{ p.title }}</span>
+                  <div class="product-eco-bar">
+                    <div
+                      class="product-eco-fill"
+                      [style.width.%]="p.ecoScore"
+                      [ngClass]="
+                        p.ecoScore >= 80
+                          ? 'excellent'
+                          : p.ecoScore >= 60
+                            ? 'good'
+                            : p.ecoScore >= 40
+                              ? 'medium'
+                              : 'low'
+                      "
+                    ></div>
+                  </div>
+                  <span class="product-score">{{ p.ecoScore }}/100</span>
+                  @if (p.isRecycled) {
+                    <span class="product-recycled-badge"></span>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        }
+
         <div class="eco-tip-dynamic">
           <span class="tip-icon"></span>
           <p>{{ improvementTip }}</p>
         </div>
       </div>
-    </ng-container>
+    }
   </div>
 </div>
-

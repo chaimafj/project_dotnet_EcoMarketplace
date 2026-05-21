@@ -1,499 +1,337 @@
 <div class="espace-page">
-
   <!-- SIDEBAR -->
-  <aside class="espace-sidebar" *ngIf="authService.getCurrentUser() as user; else notLogged">
-    <!-- Avatar block -->
-    <div class="sidebar-avatar-block">
-      <div class="avatar-ring">
-        <img class="avatar-img" [src]="avatarPreview || user.profilePictureUrl || 'https://ui-avatars.com/api/?name=' + (user.firstName || 'U') + '+' + (user.lastName || '') + '&background=1a7c50&color=fff&size=128'" [alt]="user.firstName">
-        <label class="avatar-edit-btn" title="Changer la photo">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-          <input type="file" accept="image/*" (change)="onAvatarChange($event)" hidden>
-        </label>
-      </div>
-      <div class="sidebar-user-info">
-        <h2 class="sidebar-name">{{ user.firstName }} {{ user.lastName }}</h2>
-        <span class="sidebar-role-badge" [class.role-seller]="user.role === 'Seller'" [class.role-buyer]="user.role === 'Buyer'">{{ user.role }}</span>
-        <p class="sidebar-email">{{ user.email }}</p>
-      </div>
-    </div>
+  @if (authService.getCurrentUser(); as user) {
+    <aside class="espace-sidebar">
+      <!-- Avatar block -->
+      <div class="sidebar-avatar-block">
+        <div class="avatar-ring">
+          <img
+            class="avatar-img"
+            [src]="
+              avatarPreview ||
+              user.profilePictureUrl ||
+              'https://ui-avatars.com/api/?name=' +
+                (user.firstName || 'U') +
+                '+' +
+                (user.lastName || '') +
+                '&background=1a7c50&color=fff&size=128'
+            "
+            [alt]="user.firstName"
+          />
 
-    <!-- Stats pills -->
-    <div class="sidebar-stats">
-      <div class="stat-pill">
-        <span class="stat-icon">🌿</span>
-        <div>
-          <div class="stat-label">EcoScore</div>
-          <div class="stat-value text-success">{{ user.ecoScore }}</div>
+          <label class="avatar-edit-btn" title="Changer la photo">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+            </svg>
+
+            <input type="file" accept="image/*" (change)="onAvatarChange($event)" hidden />
+          </label>
+        </div>
+
+        <div class="sidebar-user-info">
+          <h2 class="sidebar-name">{{ user.firstName }} {{ user.lastName }}</h2>
+
+          <span
+            class="sidebar-role-badge"
+            [class.role-seller]="user.role === 'Seller'"
+            [class.role-buyer]="user.role === 'Buyer'"
+          >
+            {{ user.role }}
+          </span>
+
+          <p class="sidebar-email">{{ user.email }}</p>
         </div>
       </div>
-      <div class="stat-pill">
-        <span class="stat-icon">⭐</span>
-        <div>
-          <div class="stat-label">Points</div>
-          <div class="stat-value">{{ user.totalPoints }}</div>
-        </div>
-      </div>
-      <div class="stat-pill">
-        <span class="stat-icon">📦</span>
-        <div>
-          <div class="stat-label">Produits</div>
-          <div class="stat-value">{{ products.length }}</div>
-        </div>
-      </div>
-      <div class="stat-pill">
-        <span class="stat-icon">♻️</span>
-        <div>
-          <div class="stat-label">Eco moy.</div>
-          <div class="stat-value text-success">{{ averageEcoScore }}</div>
-        </div>
-      </div>
-    </div>
 
-    <!-- Nav tabs -->
-    <nav class="sidebar-nav">
-      <button class="snav-item" [class.active]="activeTab === 'profile'" (click)="setTab('profile')">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        Mon profil
-      </button>
-      <button class="snav-item" [class.active]="activeTab === 'publish'" (click)="setTab('publish')">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-        Publier un produit
-      </button>
-      <button class="snav-item" [class.active]="activeTab === 'products'" (click)="setTab('products')">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-        Mes produits
-        <span class="snav-count" *ngIf="products.length">{{ products.length }}</span>
-      </button>
-    </nav>
-
-    <button class="btn btn-outline-danger logout-btn w-100" (click)="authService.logout()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-      Se déconnecter
-    </button>
-  </aside>
-
-  <!-- MAIN CONTENT -->
-  <main class="espace-main" *ngIf="authService.getCurrentUser() as user">
-
-    <!-- ===== TAB: PROFIL ===== -->
-    <div class="tab-panel" *ngIf="activeTab === 'profile'">
-      <header class="panel-header">
-        <div>
-          <h1 class="panel-title">Mon profil</h1>
-          <p class="panel-sub">Modifiez vos informations personnelles et votre photo de profil.</p>
-        </div>
-      </header>
-
-      <div class="row g-4">
-        <!-- Photo de profil -->
-        <div class="col-12">
-          <div class="modern-card">
-            <div class="modern-card-header">
-              <span class="card-icon-badge">📸</span>
-              <div>
-                <h3 class="card-section-title">Photo de profil</h3>
-                <p class="card-section-sub">Ajoutez une photo pour personnaliser votre compte.</p>
-              </div>
-            </div>
-            <div class="avatar-upload-zone">
-              <div class="avatar-upload-preview">
-                <img [src]="avatarPreview || user.profilePictureUrl || 'https://ui-avatars.com/api/?name=' + (user.firstName || 'U') + '+' + (user.lastName || '') + '&background=1a7c50&color=fff&size=256'" alt="Photo de profil">
-              </div>
-              <div class="avatar-upload-actions">
-                <label class="btn btn-success">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                  Choisir une photo
-                  <input type="file" accept="image/*" (change)="onAvatarChange($event)" hidden>
-                </label>
-                <button class="btn btn-outline-secondary" *ngIf="avatarPreview" (click)="removeAvatar()">Supprimer</button>
-                <p class="avatar-hint">JPG, PNG ou WebP. Max 5 Mo. Recommandé : 256×256 px.</p>
-              </div>
-            </div>
+      <!-- Stats pills -->
+      <div class="sidebar-stats">
+        <div class="stat-pill">
+          <span class="stat-icon">🌿</span>
+          <div>
+            <div class="stat-label">EcoScore</div>
+            <div class="stat-value text-success">{{ user.ecoScore }}</div>
           </div>
         </div>
 
-        <!-- Infos personnelles -->
-        <div class="col-12">
-          <div class="modern-card">
-            <div class="modern-card-header">
-              <span class="card-icon-badge">✏️</span>
-              <div>
-                <h3 class="card-section-title">Informations personnelles</h3>
-                <p class="card-section-sub">Ces informations sont visibles sur vos annonces.</p>
-              </div>
-            </div>
-
-            <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="space-form">
-              <div class="row g-3">
-                <div class="col-md-6">
-                  <label class="form-label fw-semibold">Prénom</label>
-                  <input class="form-control modern-input" formControlName="firstName" placeholder="Votre prénom">
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label fw-semibold">Nom</label>
-                  <input class="form-control modern-input" formControlName="lastName" placeholder="Votre nom">
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label fw-semibold">Adresse email</label>
-                  <div class="input-with-icon">
-                    <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                    <input class="form-control modern-input ps-5" formControlName="email" placeholder="Email" readonly>
-                  </div>
-                  <small class="text-muted">L'email ne peut pas être modifié.</small>
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label fw-semibold">Nom d'utilisateur</label>
-                  <input class="form-control modern-input" value="{{ user.username }}" readonly disabled>
-                </div>
-              </div>
-
-              <div class="form-action-row mt-4">
-                <div class="profile-message-box" *ngIf="profileMessage">
-                  <span [class.success-msg]="profileMessage.includes('succes')" [class.error-msg]="!profileMessage.includes('succes')">{{ profileMessage }}</span>
-                </div>
-                <button class="btn btn-success save-btn" type="submit" [disabled]="savingProfile">
-                  <span *ngIf="!savingProfile">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                    Enregistrer les changements
-                  </span>
-                  <span *ngIf="savingProfile" class="d-flex align-items-center gap-2">
-                    <span class="spinner-border spinner-border-sm"></span> Sauvegarde...
-                  </span>
-                </button>
-              </div>
-            </form>
+        <div class="stat-pill">
+          <span class="stat-icon">⭐</span>
+          <div>
+            <div class="stat-label">Points</div>
+            <div class="stat-value">{{ user.totalPoints }}</div>
           </div>
         </div>
 
-        <!-- Compte overview -->
-        <div class="col-12">
-          <div class="modern-card">
-            <div class="modern-card-header mb-3">
-              <span class="card-icon-badge">📊</span>
-              <div>
-                <h3 class="card-section-title">Aperçu du compte</h3>
-                <p class="card-section-sub">Vos statistiques et informations de compte.</p>
-              </div>
-            </div>
-            <div class="account-grid">
-              <div class="account-tile">
-                <div class="account-tile-label">Rôle</div>
-                <div class="account-tile-value">
-                  <span class="role-chip" [class.role-seller]="user.role === 'Seller'" [class.role-buyer]="user.role === 'Buyer'">{{ user.role }}</span>
-                </div>
-              </div>
-              <div class="account-tile">
-                <div class="account-tile-label">EcoScore personnel</div>
-                <div class="account-tile-value text-success fw-bold">{{ user.ecoScore }} / 100</div>
-              </div>
-              <div class="account-tile">
-                <div class="account-tile-label">Points accumulés</div>
-                <div class="account-tile-value fw-bold">{{ user.totalPoints }} pts</div>
-              </div>
-              <div class="account-tile">
-                <div class="account-tile-label">Produits publiés</div>
-                <div class="account-tile-value fw-bold">{{ products.length }}</div>
-              </div>
-              <div class="account-tile">
-                <div class="account-tile-label">EcoScore moyen produits</div>
-                <div class="account-tile-value text-success fw-bold">{{ averageEcoScore }} / 100</div>
-              </div>
-            </div>
+        <div class="stat-pill">
+          <span class="stat-icon">📦</span>
+          <div>
+            <div class="stat-label">Produits</div>
+            <div class="stat-value">{{ products.length }}</div>
+          </div>
+        </div>
+
+        <div class="stat-pill">
+          <span class="stat-icon">♻️</span>
+          <div>
+            <div class="stat-label">Eco moy.</div>
+            <div class="stat-value text-success">{{ averageEcoScore }}</div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- ===== TAB: PUBLISH ===== -->
-    <div class="tab-panel" *ngIf="activeTab === 'publish'">
-      <header class="panel-header">
-        <div>
-          <h1 class="panel-title">Publier un produit</h1>
-          <p class="panel-sub">Ajoutez un nouveau produit éco-responsable à la marketplace.</p>
-        </div>
-        <a class="btn btn-outline-success" [routerLink]="['/products']">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-          Voir la marketplace
-        </a>
-      </header>
-
-      <form [formGroup]="publishForm" (ngSubmit)="publishProduct()" class="space-form">
-        <!-- Infos principales -->
-        <div class="modern-card mb-4">
-          <div class="modern-card-header mb-3">
-            <span class="card-icon-badge">📝</span>
-            <div><h3 class="card-section-title">Informations principales</h3></div>
-          </div>
-          <div class="row g-3">
-            <div class="col-12">
-              <label class="form-label fw-semibold">Titre de l'annonce <span class="text-danger">*</span></label>
-              <input class="form-control modern-input" formControlName="title" placeholder="Ex: Vélo bambou éco-conçu — état neuf">
-              <div class="invalid-hint" *ngIf="publishForm.get('title')?.touched && publishForm.get('title')?.invalid">Minimum 3 caractères.</div>
-            </div>
-            <div class="col-12">
-              <label class="form-label fw-semibold">Description <span class="text-danger">*</span></label>
-              <textarea class="form-control modern-input" rows="4" formControlName="description" placeholder="Décrivez votre produit en détail : matériaux, origine, état, raison de la vente..."></textarea>
-              <div class="invalid-hint" *ngIf="publishForm.get('description')?.touched && publishForm.get('description')?.invalid">Minimum 10 caractères.</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Prix & Catégorie -->
-        <div class="modern-card mb-4">
-          <div class="modern-card-header mb-3">
-            <span class="card-icon-badge">💶</span>
-            <div><h3 class="card-section-title">Prix & Catégorie</h3></div>
-          </div>
-          <div class="row g-3">
-            <div class="col-md-4">
-              <label class="form-label fw-semibold">Prix (DT) <span class="text-danger">*</span></label>
-              <div class="input-with-icon">
-                <span class="input-prefix">DT</span>
-                <input class="form-control modern-input ps-5" type="number" formControlName="price" placeholder="0.00">
-              </div>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label fw-semibold">Catégorie <span class="text-danger">*</span></label>
-              <select class="form-select modern-input" formControlName="category">
-                <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
-              </select>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label fw-semibold">État <span class="text-danger">*</span></label>
-              <select class="form-select modern-input" formControlName="condition">
-                <option *ngFor="let condition of conditions" [value]="condition">{{ condition }}</option>
-              </select>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-semibold">Matériau</label>
-              <input class="form-control modern-input" formControlName="material" placeholder="Ex: Bambou, Plastique recyclé...">
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-semibold">Localisation</label>
-              <input class="form-control modern-input" formControlName="location" placeholder="Ex: Tunis, Paris...">
-            </div>
-          </div>
-        </div>
-
-        <!-- Eco data -->
-        <div class="modern-card mb-4">
-          <div class="modern-card-header mb-3">
-            <span class="card-icon-badge">🌱</span>
-            <div>
-              <h3 class="card-section-title">Données éco-responsables</h3>
-              <p class="card-section-sub">Ces données permettent de calculer le score environnemental du produit.</p>
-            </div>
-          </div>
-          <div class="row g-3">
-            <div class="col-md-6">
-              <label class="form-label fw-semibold">Empreinte carbone (kg CO₂)</label>
-              <input class="form-control modern-input" type="number" formControlName="carbonFootprint" placeholder="Ex: 12">
-            </div>
-            <div class="col-md-6">
-              <label class="form-label fw-semibold">Pourcentage recyclé (%)</label>
-              <input class="form-control modern-input" type="number" min="0" max="100" formControlName="recycledPercentage" placeholder="Ex: 60">
-            </div>
-            <div class="col-12">
-              <div class="eco-toggle-group">
-                <label class="eco-toggle">
-                  <input type="checkbox" formControlName="isRecycled">
-                  <span class="eco-toggle-track"></span>
-                  <span class="eco-toggle-label">
-                    <strong>Produit recyclé</strong>
-                    <small>Fabriqué à partir de matériaux recyclés</small>
-                  </span>
-                </label>
-                <label class="eco-toggle">
-                  <input type="checkbox" formControlName="isSustainable">
-                  <span class="eco-toggle-track"></span>
-                  <span class="eco-toggle-label">
-                    <strong>Produit durable</strong>
-                    <small>Conçu pour durer longtemps</small>
-                  </span>
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Image -->
-        <div class="modern-card mb-4">
-          <div class="modern-card-header mb-3">
-            <span class="card-icon-badge">🖼️</span>
-            <div>
-              <h3 class="card-section-title">Photos du produit</h3>
-              <p class="card-section-sub">Ajoutez une ou plusieurs photos réelles depuis votre appareil.</p>
-            </div>
-          </div>
-          <div class="row g-3">
-            <div class="col-12">
-              <label class="form-label fw-semibold">Importer des photos (1 à 8)</label>
-              <div class="photo-upload-box">
-                <label class="btn btn-outline-success">
-                  Choisir des photos
-                  <input type="file" accept="image/*" multiple (change)="onProductPhotosChange($event)" hidden>
-                </label>
-                <small class="text-muted">Formats supportés: JPG, PNG, WebP - max 8 Mo par image.</small>
-              </div>
-            </div>
-
-            <div class="col-12" *ngIf="productImagePreviews.length">
-              <div class="product-photo-grid">
-                <div class="photo-item" *ngFor="let photo of productImagePreviews; let i = index">
-                  <img [src]="photo" [alt]="'Photo produit ' + (i + 1)" (error)="onImgError($event)">
-                  <button type="button" class="btn btn-sm btn-danger photo-remove" (click)="removeProductPhoto(i)">Supprimer</button>
-                </div>
-              </div>
-            </div>
-
-            <div class="col-12">
-              <label class="form-label fw-semibold">Ou URL d'image (optionnel)</label>
-              <input class="form-control modern-input" formControlName="imageUrl" placeholder="https://...">
-              <small class="text-muted">Cette URL est ajoutée en plus des photos importées.</small>
-            </div>
-
-            <div class="col-12" *ngIf="!productImagePreviews.length && publishForm.get('imageUrl')?.value">
-              <div class="image-preview-box">
-                <img [src]="publishForm.get('imageUrl')?.value" alt="Aperçu" (error)="onImgError($event)">
-                <span class="image-preview-label">Aperçu URL</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Submit -->
-        <div class="form-action-row">
-          <div class="profile-message-box" *ngIf="productMessage">
-            <span [class.success-msg]="productMessage.includes('succes')" [class.error-msg]="!productMessage.includes('succes')">{{ productMessage }}</span>
-          </div>
-          <button class="btn btn-success save-btn" type="submit" [disabled]="savingProduct">
-            <span *ngIf="!savingProduct">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-              Publier le produit
-            </span>
-            <span *ngIf="savingProduct" class="d-flex align-items-center gap-2">
-              <span class="spinner-border spinner-border-sm"></span> Publication...
-            </span>
-          </button>
-        </div>
-      </form>
-    </div>
-
-    <!-- ===== TAB: PRODUCTS ===== -->
-    <div class="tab-panel" *ngIf="activeTab === 'products'">
-      <header class="panel-header">
-        <div>
-          <h1 class="panel-title">Mes produits</h1>
-          <p class="panel-sub">{{ products.length }} produit(s) publié(s) sur la marketplace.</p>
-        </div>
-        <button class="btn btn-success" (click)="setTab('publish')">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-          Ajouter un produit
+      <!-- Nav tabs -->
+      <nav class="sidebar-nav">
+        <button
+          class="snav-item"
+          [class.active]="activeTab === 'profile'"
+          (click)="setTab('profile')"
+        >
+          Mon profil
         </button>
-      </header>
 
-      <!-- Loading -->
-      <div *ngIf="loadingProducts" class="loading-state">
-        <div class="spinner-border text-success" role="status"></div>
-        <p>Chargement de vos produits...</p>
-      </div>
+        <button
+          class="snav-item"
+          [class.active]="activeTab === 'publish'"
+          (click)="setTab('publish')"
+        >
+          Publier un produit
+        </button>
 
-      <!-- Empty -->
-      <div *ngIf="!loadingProducts && !products.length" class="empty-products-state">
-        <div class="empty-icon">📦</div>
-        <h3>Aucun produit publié</h3>
-        <p>Vous n'avez pas encore publié de produit sur la marketplace.</p>
-        <button class="btn btn-success" (click)="setTab('publish')">Publier mon premier produit</button>
-      </div>
+        <button
+          class="snav-item"
+          [class.active]="activeTab === 'products'"
+          (click)="setTab('products')"
+        >
+          Mes produits
 
-      <!-- Products grid -->
-      <div class="products-grid" *ngIf="!loadingProducts && products.length">
-        <article class="product-detail-card" *ngFor="let product of products">
-          <!-- Image -->
-          <div class="pdc-image-wrap">
-            <img [src]="product.image || product.images?.[0] || 'https://placehold.co/400x260/e8f5e9/1a7c50?text=Produit'" [alt]="product.title" (error)="onImgError($event)">
-            <span class="pdc-eco-badge">🌿 {{ product.ecoScore }}</span>
-            <span class="pdc-condition-badge">{{ product.condition }}</span>
-          </div>
+          @if (products.length) {
+            <span class="snav-count">{{ products.length }}</span>
+          }
+        </button>
+      </nav>
 
-          <!-- Content -->
-          <div class="pdc-body">
-            <div class="pdc-header">
-              <div>
-                <h3 class="pdc-title">{{ product.title }}</h3>
-                <p class="pdc-meta">
-                  <span class="pdc-tag">{{ product.category }}</span>
-                  <span class="pdc-sep">•</span>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                  {{ product.location }}
-                </p>
-              </div>
-              <div class="pdc-price">{{ product.price | number:'1.2-2' }} DT</div>
-            </div>
-
-            <p class="pdc-description">{{ product.description }}</p>
-
-            <!-- Details grid -->
-            <div class="pdc-details-grid">
-              <div class="pdc-detail-item" *ngIf="product.material">
-                <span class="pdc-detail-label">Matériau</span>
-                <span class="pdc-detail-value">{{ product.material }}</span>
-              </div>
-              <div class="pdc-detail-item">
-                <span class="pdc-detail-label">CO₂ économisé</span>
-                <span class="pdc-detail-value text-success">{{ product.carbonFootprint }} kg</span>
-              </div>
-              <div class="pdc-detail-item">
-                <span class="pdc-detail-label">% Recyclé</span>
-                <span class="pdc-detail-value text-success">{{ product.recycledPercentage }}%</span>
-              </div>
-              <div class="pdc-detail-item">
-                <span class="pdc-detail-label">EcoScore</span>
-                <span class="pdc-detail-value">
-                  <span class="eco-score-bar">
-                    <span class="eco-score-fill" [style.width.%]="product.ecoScore"></span>
-                  </span>
-                  {{ product.ecoScore }}/100
-                </span>
-              </div>
-            </div>
-
-            <!-- Badges éco -->
-            <div class="pdc-badges">
-              <span class="eco-label-badge" *ngIf="product.isRecycled">♻️ Recyclé</span>
-              <span class="eco-label-badge" *ngIf="product.isSustainable">🌱 Durable</span>
-            </div>
-
-            <!-- Actions -->
-            <div class="pdc-actions">
-              <a class="btn btn-sm btn-outline-success" [routerLink]="['/product', product.id]">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                Voir l'annonce
-              </a>
-              <button class="btn btn-sm btn-outline-secondary">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                Modifier
-              </button>
-            </div>
-          </div>
-        </article>
-      </div>
-    </div>
-
-  </main>
-
-  <!-- NOT LOGGED -->
-  <ng-template #notLogged>
+      <button class="btn btn-outline-danger logout-btn w-100" (click)="authService.logout()">
+        Se déconnecter
+      </button>
+    </aside>
+  } @else {
     <div class="notlogged-screen">
       <div class="notlogged-card">
         <div class="notlogged-icon">🔐</div>
+
         <h2>Accès réservé aux membres</h2>
-        <p class="text-muted" *ngIf="!authService.isAuthenticated()">Connectez-vous pour accéder à votre espace personnel.</p>
-        <p class="text-muted" *ngIf="authService.isAuthenticated()">Votre session est détectée. Rafraîchissez la page pour charger votre espace.</p>
-        <a class="btn btn-success" [routerLink]="['/login']" *ngIf="!authService.isAuthenticated()">Se connecter</a>
+
+        @if (!authService.isAuthenticated()) {
+          <p class="text-muted">Connectez-vous pour accéder à votre espace personnel.</p>
+        }
+
+        @if (authService.isAuthenticated()) {
+          <p class="text-muted">
+            Votre session est détectée. Rafraîchissez la page pour charger votre espace.
+          </p>
+        }
+
+        @if (!authService.isAuthenticated()) {
+          <a class="btn btn-success" [routerLink]="['/login']"> Se connecter </a>
+        }
       </div>
     </div>
-  </ng-template>
+  }
 
+  <!-- MAIN CONTENT -->
+  @if (authService.getCurrentUser(); as user) {
+    <main class="espace-main">
+      <!-- ===== TAB: PROFILE ===== -->
+      @if (activeTab === 'profile') {
+        <div class="tab-panel">
+          <div class="form-action-row mt-4">
+            @if (profileMessage) {
+              <div class="profile-message-box">
+                <span
+                  [class.success-msg]="profileMessage.includes('succes')"
+                  [class.error-msg]="!profileMessage.includes('succes')"
+                >
+                  {{ profileMessage }}
+                </span>
+              </div>
+            }
+
+            <button class="btn btn-success save-btn" type="submit" [disabled]="savingProfile">
+              @if (!savingProfile) {
+                <span>Enregistrer les changements</span>
+              }
+
+              @if (savingProfile) {
+                <span class="d-flex align-items-center gap-2">
+                  <span class="spinner-border spinner-border-sm"></span>
+                  Sauvegarde...
+                </span>
+              }
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- ===== TAB: PUBLISH ===== -->
+      @if (activeTab === 'publish') {
+        <div class="tab-panel">
+          <select class="form-select modern-input" formControlName="category">
+            @for (category of categories; track category) {
+              <option [value]="category">
+                {{ category }}
+              </option>
+            }
+          </select>
+
+          <select class="form-select modern-input" formControlName="condition">
+            @for (condition of conditions; track condition) {
+              <option [value]="condition">
+                {{ condition }}
+              </option>
+            }
+          </select>
+
+          @if (productImagePreviews.length) {
+            <div class="product-photo-grid">
+              @for (photo of productImagePreviews; track photo; let i = $index) {
+                <div class="photo-item">
+                  <img
+                    [src]="photo"
+                    [alt]="'Photo produit ' + (i + 1)"
+                    (error)="onImgError($event)"
+                  />
+
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-danger photo-remove"
+                    (click)="removeProductPhoto(i)"
+                  >
+                    Supprimer
+                  </button>
+                </div>
+              }
+            </div>
+          }
+
+          @if (!productImagePreviews.length && publishForm.get('imageUrl')?.value) {
+            <div class="image-preview-box">
+              <img
+                [src]="publishForm.get('imageUrl')?.value"
+                alt="Aperçu"
+                (error)="onImgError($event)"
+              />
+
+              <span class="image-preview-label">Aperçu URL</span>
+            </div>
+          }
+
+          <div class="form-action-row">
+            @if (productMessage) {
+              <div class="profile-message-box">
+                <span
+                  [class.success-msg]="productMessage.includes('succes')"
+                  [class.error-msg]="!productMessage.includes('succes')"
+                >
+                  {{ productMessage }}
+                </span>
+              </div>
+            }
+
+            <button class="btn btn-success save-btn" type="submit" [disabled]="savingProduct">
+              @if (!savingProduct) {
+                <span>Publier le produit</span>
+              }
+
+              @if (savingProduct) {
+                <span class="d-flex align-items-center gap-2">
+                  <span class="spinner-border spinner-border-sm"></span>
+                  Publication...
+                </span>
+              }
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- ===== TAB: PRODUCTS ===== -->
+      @if (activeTab === 'products') {
+        <div class="tab-panel">
+          @if (loadingProducts) {
+            <div class="loading-state">
+              <div class="spinner-border text-success" role="status"></div>
+              <p>Chargement de vos produits...</p>
+            </div>
+          }
+
+          @if (!loadingProducts && !products.length) {
+            <div class="empty-products-state">
+              <div class="empty-icon">📦</div>
+
+              <h3>Aucun produit publié</h3>
+
+              <p>Vous n'avez pas encore publié de produit sur la marketplace.</p>
+
+              <button class="btn btn-success" (click)="setTab('publish')">
+                Publier mon premier produit
+              </button>
+            </div>
+          }
+
+          @if (!loadingProducts && products.length) {
+            <div class="products-grid">
+              @for (product of products; track product.id) {
+                <article class="product-detail-card">
+                  <div class="pdc-image-wrap">
+                    <img
+                      [src]="
+                        product.image ||
+                        product.images?.[0] ||
+                        'https://placehold.co/400x260/e8f5e9/1a7c50?text=Produit'
+                      "
+                      [alt]="product.title"
+                      (error)="onImgError($event)"
+                    />
+
+                    <span class="pdc-eco-badge"> 🌿 {{ product.ecoScore }} </span>
+
+                    <span class="pdc-condition-badge">
+                      {{ product.condition }}
+                    </span>
+                  </div>
+
+                  <div class="pdc-body">
+                    @if (product.material) {
+                      <div class="pdc-detail-item">
+                        <span class="pdc-detail-label">Matériau</span>
+                        <span class="pdc-detail-value">{{ product.material }}</span>
+                      </div>
+                    }
+
+                    <div class="pdc-badges">
+                      @if (product.isRecycled) {
+                        <span class="eco-label-badge"> ♻️ Recyclé </span>
+                      }
+
+                      @if (product.isSustainable) {
+                        <span class="eco-label-badge"> 🌱 Durable </span>
+                      }
+                    </div>
+                  </div>
+                </article>
+              }
+            </div>
+          }
+        </div>
+      }
+    </main>
+  }
 </div>

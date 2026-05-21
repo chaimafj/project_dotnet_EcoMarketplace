@@ -3,7 +3,6 @@
     <div class="header-content">
       <h1>Panneau d'Administration</h1>
       <p class="subtitle">Pilotez la plateforme, moderez les contenus et suivez les performances globales.</p>
-
       <div class="header-kpis">
         <div class="kpi-pill">
           <span>Utilisateurs actifs</span>
@@ -15,46 +14,21 @@
         </div>
       </div>
     </div>
-    <div class="admin-badge">
-      <span>Administrateur</span>
-    </div>
+    <div class="admin-badge"><span>Administrateur</span></div>
   </div>
 
-  <!-- Navigation Tabs -->
   <div class="dashboard-tabs">
-    <button 
-      class="tab-btn"
-      [class.active]="currentTab === 'overview'"
-      (click)="setTab('overview')">
-      Aperçu
-    </button>
-    <button 
-      class="tab-btn"
-      [class.active]="currentTab === 'users'"
-      (click)="setTab('users')">
-      Utilisateurs
-    </button>
-    <button 
-      class="tab-btn"
-      [class.active]="currentTab === 'products'"
-      (click)="setTab('products')">
-      Produits
-    </button>
-    <button 
-      class="tab-btn"
-      [class.active]="currentTab === 'stats'"
-      (click)="setTab('stats')">
-      Statistiques détaillées
-    </button>
+    <button class="tab-btn" [class.active]="currentTab === 'overview'" (click)="setTab('overview')">Aperçu</button>
+    <button class="tab-btn" [class.active]="currentTab === 'users'" (click)="setTab('users')">Utilisateurs</button>
+    <button class="tab-btn" [class.active]="currentTab === 'products'" (click)="setTab('products')">Produits</button>
+    <button class="tab-btn" [class.active]="currentTab === 'stats'" (click)="setTab('stats')">Statistiques détaillées</button>
   </div>
 
-  <!-- Tab Content -->
   <div class="tab-content">
-    <!-- Overview Tab -->
-    <ng-container *ngIf="currentTab === 'overview'">
+
+    @if (currentTab === 'overview') {
       <div class="content-section">
         <h2>Aperçu de la Plateforme</h2>
-        
         <div class="stats-grid">
           <div class="stats-card">
             <div class="stat-info">
@@ -63,7 +37,6 @@
               <p class="stat-subvalue">{{ platformStats.activeUsers }} actifs</p>
             </div>
           </div>
-
           <div class="stats-card">
             <div class="stat-info">
               <p class="stat-label">Produits</p>
@@ -71,7 +44,6 @@
               <p class="stat-subvalue">{{ platformStats.availableProducts }} disponibles</p>
             </div>
           </div>
-
           <div class="stats-card">
             <div class="stat-info">
               <p class="stat-label">Transactions</p>
@@ -79,7 +51,6 @@
               <p class="stat-subvalue">Conversion {{ conversionRate | number:'1.0-1' }}%</p>
             </div>
           </div>
-
           <div class="stats-card">
             <div class="stat-info">
               <p class="stat-label">Revenus</p>
@@ -99,7 +70,6 @@
               <p class="metric-label">CO2 Épargné</p>
               <p class="metric-desc">Émissions évitées par le recyclage</p>
             </div>
-
             <div class="impact-card">
               <div class="impact-metric">
                 <span class="metric-value">{{ platformStats.environmentalImpact.averageRecycledPercentage }}</span>
@@ -108,7 +78,6 @@
               <p class="metric-label">Taux de Recyclage</p>
               <p class="metric-desc">Produits reformatés/reconduits</p>
             </div>
-
             <div class="impact-card">
               <div class="impact-metric">
                 <span class="metric-value">{{ platformStats.environmentalImpact.productsValidated }}</span>
@@ -123,31 +92,19 @@
         <div class="quick-actions">
           <h3>Actions Rapides</h3>
           <div class="actions-grid">
-            <button class="action-btn" (click)="setTab('users')">
-              <span>Gérer Utilisateurs</span>
-            </button>
-            <button class="action-btn" (click)="setTab('products')">
-              <span>Modérer Produits</span>
-            </button>
-            <button class="action-btn" (click)="setTab('stats')">
-              <span>Voir Rapports</span>
-            </button>
+            <button class="action-btn" (click)="setTab('users')"><span>Gérer Utilisateurs</span></button>
+            <button class="action-btn" (click)="setTab('products')"><span>Modérer Produits</span></button>
+            <button class="action-btn" (click)="setTab('stats')"><span>Voir Rapports</span></button>
           </div>
         </div>
       </div>
-    </ng-container>
+    }
 
-    <!-- Users Management Tab -->
-    <ng-container *ngIf="currentTab === 'users'">
+    @if (currentTab === 'users') {
       <div class="content-section">
         <h2>Gestion des Utilisateurs</h2>
-        
         <div class="filter-bar">
-          <input 
-            type="text" 
-            class="search-input" 
-            placeholder="Chercher par nom ou email..."
-            [(ngModel)]="searchQuery">
+          <input type="text" class="search-input" placeholder="Chercher par nom ou email..." [(ngModel)]="searchQuery">
           <select class="filter-select" [(ngModel)]="filterRole">
             <option value="all">Tous les rôles</option>
             <option value="Buyer">Acheteurs</option>
@@ -155,178 +112,152 @@
           </select>
         </div>
 
-        <div *ngIf="loading" class="text-center text-muted">
-          <p>Chargement des utilisateurs...</p>
-        </div>
+        @if (loading) {
+          <div class="text-center text-muted"><p>Chargement des utilisateurs...</p></div>
+        }
 
-        <div class="table-wrap" *ngIf="!loading">
-        <table class="users-table">
-          <thead>
-            <tr>
-              <th>Nom</th>
-              <th>Username</th>
-              <th>Email</th>
-              <th>Rôle</th>
-              <th>EcoScore</th>
-              <th>Points</th>
-              <th>Produits</th>
-              <th>Membre depuis</th>
-              <th>Statut</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let u of getFilteredUsers()">
-              <td>{{ u.firstName }} {{ u.lastName }}</td>
-              <td>{{ u.username }}</td>
-              <td>{{ u.email }}</td>
-              <td><span class="badge">{{ u.role }}</span></td>
-              <td>{{ u.ecoScore }}</td>
-              <td>{{ u.totalPoints }}</td>
-              <td>{{ u.productsCount }}</td>
-              <td>{{ u.createdAt | date:'dd/MM/yyyy' }}</td>
-              <td>
-                <select 
-                  class="status-select"
-                  [value]="u.status"
-                  (change)="changeUserStatus(u, $any($event.target).value)"
-                  [ngClass]="getStatusBadgeClass(u.status)"
-                  [disabled]="isAdminUser(u)">
-                  <option value="active">Actif</option>
-                  <option value="inactive">Inactif</option>
-                </select>
-              </td>
-              <td>
-                <button class="btn-delete" (click)="deleteUser(u.id)" title="Supprimer" [disabled]="isAdminUser(u)">
-                  🗑️
-                </button>
-                <span *ngIf="isAdminUser(u)" class="protected-label">Compte admin protégé</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        </div>
+        @if (!loading) {
+          <div class="table-wrap">
+            <table class="users-table">
+              <thead>
+                <tr>
+                  <th>Nom</th><th>Username</th><th>Email</th><th>Rôle</th>
+                  <th>EcoScore</th><th>Points</th><th>Produits</th>
+                  <th>Membre depuis</th><th>Statut</th><th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (u of getFilteredUsers(); track u.id) {
+                  <tr>
+                    <td>{{ u.firstName }} {{ u.lastName }}</td>
+                    <td>{{ u.username }}</td>
+                    <td>{{ u.email }}</td>
+                    <td><span class="badge">{{ u.role }}</span></td>
+                    <td>{{ u.ecoScore }}</td>
+                    <td>{{ u.totalPoints }}</td>
+                    <td>{{ u.productsCount }}</td>
+                    <td>{{ u.createdAt | date:'dd/MM/yyyy' }}</td>
+                    <td>
+                      <select
+                        class="status-select"
+                        [value]="u.status"
+                        (change)="changeUserStatus(u, $any($event.target).value)"
+                        [ngClass]="getStatusBadgeClass(u.status)"
+                        [disabled]="isAdminUser(u)">
+                        <option value="active">Actif</option>
+                        <option value="inactive">Inactif</option>
+                      </select>
+                    </td>
+                    <td>
+                      <button class="btn-delete" (click)="deleteUser(u.id)" title="Supprimer" [disabled]="isAdminUser(u)">🗑️</button>
+                      @if (isAdminUser(u)) {
+                        <span class="protected-label">Compte admin protégé</span>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
 
-        <div *ngIf="!loading && getFilteredUsers().length === 0" class="empty-state">
-          <p>Aucun utilisateur trouvé</p>
-        </div>
+        @if (!loading && getFilteredUsers().length === 0) {
+          <div class="empty-state"><p>Aucun utilisateur trouvé</p></div>
+        }
       </div>
-    </ng-container>
+    }
 
-    <!-- Products Management Tab -->
-    <ng-container *ngIf="currentTab === 'products'">
+    @if (currentTab === 'products') {
       <div class="content-section">
         <div class="products-head-row">
           <h2>Gestion des Produits</h2>
+          @if (!loading) {
+            <div class="products-toolbar">
+              <button class="toolbar-btn" [class.active]="!showAllProducts" (click)="setProductDisplayMode(false)">Produits à modérer</button>
+              <button class="toolbar-btn" [class.active]="showAllProducts" (click)="setProductDisplayMode(true)">Afficher tous les produits</button>
+            </div>
+          }
+        </div>
 
-          <div class="products-toolbar" *ngIf="!loading">
-            <button
-              class="toolbar-btn"
-              [class.active]="!showAllProducts"
-              (click)="setProductDisplayMode(false)">
-              Produits à modérer
-            </button>
-            <button
-              class="toolbar-btn"
-              [class.active]="showAllProducts"
-              (click)="setProductDisplayMode(true)">
-              Afficher tous les produits
-            </button>
+        @if (loading) {
+          <div class="text-center text-muted"><p>Chargement des produits...</p></div>
+        }
+
+        @if (!loading && productsLoadError) {
+          <div class="products-load-error">{{ productsLoadError }}</div>
+        }
+
+        @if (!loading && !productsLoadError && getDisplayedProducts().length > 0) {
+          <div class="table-wrap">
+            <table class="products-table">
+              <thead>
+                <tr>
+                  <th>Produit</th><th>Vendeur</th><th>Prix (DT)</th><th>Statut</th>
+                  <th>Éco Score</th><th>Catégorie</th><th>Matériau</th>
+                  <th>Ventes</th><th>Créé le</th><th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (product of getDisplayedProducts(); track product.id) {
+                  <tr>
+                    <td><strong>{{ product.title }}</strong></td>
+                    <td>{{ product.sellerName }}</td>
+                    <td>{{ formatPriceWithCurrency(product.price, product.currency) }}</td>
+                    <td><span [class]="getProductStatusClass(product.status)">{{ product.status }}</span></td>
+                    <td><span class="eco-badge">{{ product.ecoScore }}</span></td>
+                    <td>{{ product.category }}</td>
+                    <td>{{ product.material || 'N/A' }}</td>
+                    <td>{{ product.salesCount }}</td>
+                    <td>{{ product.createdAt | date:'dd/MM/yyyy' }}</td>
+                    <td>
+                      <button
+                        class="btn-sm"
+                        [ngClass]="isProductValidated(product) ? 'btn-primary' : 'btn-success'"
+                        [disabled]="isProductValidated(product)"
+                        (click)="approveProduct(product.id)">
+                        {{ isProductValidated(product) ? '✓ Validé' : '✓ Valider' }}
+                      </button>
+                      <button class="btn-sm btn-danger" (click)="rejectProduct(product.id)">🗑️ Supprimer définitivement</button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
           </div>
-        </div>
-        
-        <div *ngIf="loading" class="text-center text-muted">
-          <p>Chargement des produits...</p>
-        </div>
+        }
 
-        <div *ngIf="!loading && productsLoadError" class="products-load-error">
-          {{ productsLoadError }}
-        </div>
-
-        <div class="table-wrap" *ngIf="!loading && !productsLoadError && getDisplayedProducts().length > 0">
-        <table class="products-table">
-          <thead>
-            <tr>
-              <th>Produit</th>
-              <th>Vendeur</th>
-              <th>Prix (DT)</th>
-              <th>Statut</th>
-              <th>Éco Score</th>
-              <th>Catégorie</th>
-              <th>Matériau</th>
-              <th>Ventes</th>
-              <th>Créé le</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let product of getDisplayedProducts()">
-              <td>
-                <strong>{{ product.title }}</strong>
-              </td>
-              <td>{{ product.sellerName }}</td>
-              <td>{{ formatPriceWithCurrency(product.price, product.currency) }}</td>
-              <td><span [class]="getProductStatusClass(product.status)">{{ product.status }}</span></td>
-              <td><span class="eco-badge">{{ product.ecoScore }}</span></td>
-              <td>{{ product.category }}</td>
-              <td>{{ product.material || 'N/A' }}</td>
-              <td>{{ product.salesCount }}</td>
-              <td>{{ product.createdAt | date:'dd/MM/yyyy' }}</td>
-              <td>
-                <button
-                  class="btn-sm"
-                  [ngClass]="isProductValidated(product) ? 'btn-primary' : 'btn-success'"
-                  [disabled]="isProductValidated(product)"
-                  (click)="approveProduct(product.id)">
-                  {{ isProductValidated(product) ? '✓ Validé' : '✓ Valider' }}
-                </button>
-                <button class="btn-sm btn-danger" (click)="rejectProduct(product.id)">
-                  🗑️ Supprimer définitivement
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        </div>
-
-        <div *ngIf="!loading && !productsLoadError && getDisplayedProducts().length === 0" class="empty-state">
-          <p>{{ showAllProducts ? 'Aucun produit disponible' : 'Aucun produit à modérer' }}</p>
-        </div>
+        @if (!loading && !productsLoadError && getDisplayedProducts().length === 0) {
+          <div class="empty-state">
+            <p>{{ showAllProducts ? 'Aucun produit disponible' : 'Aucun produit à modérer' }}</p>
+          </div>
+        }
       </div>
-    </ng-container>
+    }
 
-    <!-- Detailed Stats Tab -->
-    <ng-container *ngIf="currentTab === 'stats'">
+    @if (currentTab === 'stats') {
       <div class="content-section">
         <h2>Statistiques Détaillées de la Plateforme</h2>
-        
         <div class="stats-detail-grid">
           <div class="detail-card">
             <h3>Ventes Moyennes</h3>
             <p class="detail-value">{{ platformStats.averageSalesPerProduct | number:'1.2-2' }}</p>
             <p class="detail-desc">ventes par produit</p>
           </div>
-
           <div class="detail-card">
             <h3>Revenus (DT)</h3>
             <p class="detail-value revenue-multi">{{ formatRevenueByCurrency() }}</p>
             <p class="detail-desc">totaux plateforme</p>
           </div>
-
           <div class="detail-card">
             <h3>Taux de Conversion</h3>
             <p class="detail-value">{{ conversionRate | number:'1.1-1' }}%</p>
             <p class="detail-desc">utilisateurs ayant acheté</p>
           </div>
         </div>
-
         <div class="chart-section">
           <h3>Activité Récente</h3>
-          <div class="chart-placeholder">
-            <p>Graphique d'activité à venir</p>
-          </div>
+          <div class="chart-placeholder"><p>Graphique d'activité à venir</p></div>
         </div>
-
         <div class="reports-section">
           <h3>Rapports & Exports</h3>
           <div class="reports-buttons">
@@ -337,6 +268,7 @@
           </div>
         </div>
       </div>
-    </ng-container>
+    }
+
   </div>
 </div>
