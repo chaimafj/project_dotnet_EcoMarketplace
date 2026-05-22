@@ -72,7 +72,7 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadAdminData();
+    this.loadPlatformStats();
   }
 
   setTab(tab: 'overview' | 'users' | 'products' | 'stats'): void {
@@ -82,12 +82,7 @@ export class AdminDashboardComponent implements OnInit {
       this.showAllProducts = false;
       this.loadProducts();
     }
-    if (tab === 'stats') this.loadDetailedStats();
-  }
-
-  loadAdminData(): void {
-    this.loading = true;
-    this.loadPlatformStats();
+    if (tab === 'stats') this.loadPlatformStats();
   }
 
   loadPlatformStats(): void {
@@ -165,32 +160,6 @@ export class AdminDashboardComponent implements OnInit {
     return this.products.filter((product) => !this.isProductValidated(product));
   }
 
-  loadDetailedStats(): void {
-    this.loading = true;
-    this.adminService.getStats().subscribe({
-      next: (stats) => {
-        this.platformStats = {
-          totalUsers: stats.totalUsers,
-          activeUsers: stats.activeUsers,
-          totalProducts: stats.totalProducts,
-          availableProducts: stats.availableProducts,
-          totalTransactions: stats.totalTransactions,
-          revenueByCurrency: stats.revenueByCurrency ?? [],
-          averageSalesPerProduct: stats.averageSalesPerProduct,
-          environmentalImpact: {
-            totalCO2Saved: stats.totalCO2Saved,
-            averageRecycledPercentage: stats.averageRecycledPercentage,
-            productsValidated: stats.productsValidated
-          }
-        };
-        this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
-      }
-    });
-  }
-
   getFilteredUsers(): AdminUser[] {
     return this.users.filter(u => {
       const matchQuery = u.firstName.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
@@ -226,9 +195,10 @@ export class AdminDashboardComponent implements OnInit {
     if (this.isAdminUser(user)) return;
 
     const previous = user.status;
-    user.status = newStatus === 'banned' ? 'inactive' : newStatus;
+    const requestStatus: 'active' | 'inactive' = newStatus === 'banned' ? 'inactive' : newStatus;
+    user.status = requestStatus;
 
-    this.adminService.updateUserStatus(user.id, newStatus).subscribe({
+    this.adminService.updateUserStatus(user.id, requestStatus).subscribe({
       next: () => {
         this.loadPlatformStats();
       },

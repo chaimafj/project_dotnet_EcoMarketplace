@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Subscription, interval, timer } from 'rxjs';
 import { Product, ProductService } from '../../Services/product.service';
-import { AuthService } from '../../Services/auth.service';
+import { AuthService, User } from '../../Services/auth.service';
 import { SellerSale, TransactionService } from '../../Services/transaction.service';
 
 interface SalesData {
@@ -24,7 +24,7 @@ interface SalesData {
 export class SellerDashboardComponent implements OnInit, OnDestroy {
   currentTab: 'add' | 'manage' | 'sales' | 'environmental' = 'manage';
   
-  user: any;
+  user: User | null = null;
   loading = false;
   products: Product[] = [];
   sellerSales: SellerSale[] = [];
@@ -88,8 +88,6 @@ export class SellerDashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.subscribeToCurrentUser();
-    this.loadMyProducts();
-    this.loadMySales();
     this.startSalesRealtimeRefresh();
     this.startProductsRealtimeRefresh();
   }
@@ -235,7 +233,6 @@ export class SellerDashboardComponent implements OnInit, OnDestroy {
   private fetchMyProducts(showLoader: boolean): void {
     const currentUser = this.authService.getCurrentUser();
     if (!currentUser) {
-      console.error('Aucun utilisateur authentifié');
       this.loading = false;
       this.products = [];
       return;
@@ -243,13 +240,11 @@ export class SellerDashboardComponent implements OnInit, OnDestroy {
 
     this.user = currentUser;
 
-    console.log(`Chargement des produits du vendeur ID: ${currentUser.id}`);
     if (showLoader) {
       this.loading = true;
     }
     this.productService.getProducts({ page: 1, pageSize: 100, sellerId: currentUser.id }).subscribe({
       next: (response) => {
-        console.log('Réponse API:', response);
         const sourceProducts = Array.isArray(response)
           ? response
           : Array.isArray(response?.items)
@@ -259,13 +254,10 @@ export class SellerDashboardComponent implements OnInit, OnDestroy {
               : [];
 
         const allProducts = (sourceProducts as Product[]).map((product) => this.normalizeProduct(product));
-        console.log(`Total produits reçus: ${allProducts.length}`);
         this.products = allProducts;
-        console.log(`Produits affichés: ${this.products.length}`);
         this.loading = false;
       },
-      error: (error) => {
-        console.error('Erreur lors du chargement des produits:', error);
+      error: () => {
         this.products = [];
         this.loading = false;
       }
@@ -329,12 +321,8 @@ export class SellerDashboardComponent implements OnInit, OnDestroy {
       isSustainable: undefined
     };
 
-    console.log('📦 Envoi du produit:', productRequest);
-
-    // Appeler l'API pour créer le produit
     this.productService.createProduct(productRequest).subscribe({
-      next: (createdProduct) => {
-        console.log('✅ Produit créé avec succès:', createdProduct);
+      next: () => {
         this.loading = false;
         alert('Produit publié avec succès!');
         this.publishForm.reset();
@@ -343,8 +331,6 @@ export class SellerDashboardComponent implements OnInit, OnDestroy {
         this.loadMyProducts(); // Récharger la liste
       },
       error: (error) => {
-        console.error('❌ Erreur lors de la création du produit:', error);
-        console.error('Réponse complète:', error.error);
         const errorMsg = error?.error?.message || error?.message || 'Erreur inconnue';
         alert(`Erreur lors de la publication: ${errorMsg}`);
         this.loading = false;
@@ -353,10 +339,16 @@ export class SellerDashboardComponent implements OnInit, OnDestroy {
   }
 
   deleteProduct(productId: string | number): void {
-    if (confirm('Êtes-vous sûr de vouloir supprimer ce produit?')) {
-      this.products = this.products.filter(p => String(p.id) !== String(productId));
-      alert('Produit supprimé');
-    }
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce produit?')) return;
+
+    this.productService.deleteProduct(productId).subscribe({
+      next: () => {
+        this.products = this.products.filter((p) => String(p.id) !== String(productId));
+      },
+      error: () => {
+        alert('Impossible de supprimer ce produit pour le moment.');
+      }
+    });
   }
 
   private normalizeProduct(product: Product): Product {
@@ -470,10 +462,6 @@ export class SellerDashboardComponent implements OnInit, OnDestroy {
     return this.sellerSales.reduce((sum, s) => sum + Number(s.quantity || 0), 0);
   }
 
-  get totalRevenue(): number {
-    return this.sellerSales.reduce((sum, s) => sum + Number(s.totalPrice || 0), 0);
-  }
-
   get completedSalesCount(): number {
     return this.sellerSales.filter((sale) => String(sale.status || '').toLowerCase() === 'completed').length;
   }
@@ -506,10 +494,6 @@ export class SellerDashboardComponent implements OnInit, OnDestroy {
     return this.formatCurrencyTotals(this.buildCurrencyTotals(this.sellerSales));
   }
 
-  get totalCO2Saved(): number {
-    return this.products.reduce((sum, p) => sum + (p.co2Saved || 0), 0);
-  }
-
   get averageRecycledPercentage(): number {
     if (!this.products.length) return 0;
     const total = this.products.reduce((sum, p) => sum + (p.recycledPercentage || 0), 0);
@@ -522,10 +506,6 @@ export class SellerDashboardComponent implements OnInit, OnDestroy {
 
   get sustainableProductsCount(): number {
     return this.products.filter(p => p.isSustainable).length;
-  }
-
-  get totalCarbonFootprint(): number {
-    return Math.round(this.products.reduce((sum, p) => sum + (p.carbonFootprint || 0), 0) * 10) / 10;
   }
 
   get ecoScoreLevel(): string {

@@ -68,7 +68,7 @@ export class AdminService {
     return this.http.get<AdminUser[]>(`${this.apiUrl}/users`);
   }
 
-  updateUserStatus(userId: number, status: 'active' | 'inactive' | 'banned'): Observable<{ message: string }> {
+  updateUserStatus(userId: number, status: 'active' | 'inactive'): Observable<{ message: string }> {
     return this.http.put<{ message: string }>(`${this.apiUrl}/users/${userId}/status`, { status });
   }
 

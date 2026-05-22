@@ -64,6 +64,11 @@ namespace EcoMarketplace.API.Controllers
                 return BadRequest(new { message = "Admin account is protected and cannot be deactivated." });
 
             var requestedStatus = (dto.Status ?? string.Empty).Trim().ToLowerInvariant();
+            if (requestedStatus != "active" && requestedStatus != "inactive")
+            {
+                return BadRequest(new { message = "Invalid status. Allowed values: active, inactive." });
+            }
+
             user.IsActive = requestedStatus == "active";
 
             await _userRepository.UpdateAsync(user);
