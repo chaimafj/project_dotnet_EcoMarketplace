@@ -211,7 +211,7 @@
       <div class="content-section">
         <h2>Mes produits en vente</h2>
 
-        @if (loading) {
+        @if (loading && products.length === 0) {
           <div class="text-center text-muted"><p>Chargement de vos produits...</p></div>
         }
 
@@ -222,7 +222,7 @@
           </div>
         }
 
-        @if (!loading && products.length > 0) {
+        @if (products.length > 0) {
           <div class="products-grid">
             @for (product of products; track product.id) {
               <div class="product-card">

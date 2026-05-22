@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Subscription, interval, timer } from 'rxjs';
 import { Product, ProductService } from '../../Services/product.service';
 import { AuthService } from '../../Services/auth.service';
 import { SellerSale, TransactionService } from '../../Services/transaction.service';
@@ -20,7 +21,7 @@ interface SalesData {
   templateUrl: './seller-dashboard.component.html',
   styleUrl: './seller-dashboard.component.scss'
 })
-export class SellerDashboardComponent implements OnInit {
+export class SellerDashboardComponent implements OnInit, OnDestroy {
   currentTab: 'add' | 'manage' | 'sales' | 'environmental' = 'manage';
   
   user: any;
@@ -37,6 +38,9 @@ export class SellerDashboardComponent implements OnInit {
   publishForm: FormGroup;
   
   salesData: SalesData[] = [];
+  private salesRefreshSubscription?: Subscription;
+  private productsRefreshSubscription?: Subscription;
+  private currentUserSubscription?: Subscription;
 
   categories = [
     { label: 'Électronique', value: 'Electronics' },
@@ -83,8 +87,35 @@ export class SellerDashboardComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.subscribeToCurrentUser();
     this.loadMyProducts();
     this.loadMySales();
+    this.startSalesRealtimeRefresh();
+    this.startProductsRealtimeRefresh();
+  }
+
+  ngOnDestroy(): void {
+    this.stopSalesRealtimeRefresh();
+    this.stopProductsRealtimeRefresh();
+    this.currentUserSubscription?.unsubscribe();
+    this.currentUserSubscription = undefined;
+  }
+
+  private subscribeToCurrentUser(): void {
+    this.currentUserSubscription?.unsubscribe();
+    this.currentUserSubscription = this.authService.currentUser$.subscribe((user) => {
+      this.user = user;
+      if (!user) {
+        this.loading = false;
+        this.products = [];
+        this.sellerSales = [];
+        this.refreshSalesData();
+        return;
+      }
+
+      this.fetchMyProducts(false);
+      this.fetchMySales(true);
+    });
   }
 
   setTab(tab: 'add' | 'manage' | 'sales' | 'environmental'): void {
@@ -92,9 +123,16 @@ export class SellerDashboardComponent implements OnInit {
     if (tab === 'sales') {
       this.loadMySales();
     }
+    if (tab === 'manage' || tab === 'environmental') {
+      this.loadMyProducts();
+    }
   }
 
   loadMySales(): void {
+    this.fetchMySales(false);
+  }
+
+  private fetchMySales(preserveMessage: boolean): void {
     const currentUser = this.authService.getCurrentUser();
     if (!currentUser) {
       this.sellerSales = [];
@@ -104,7 +142,9 @@ export class SellerDashboardComponent implements OnInit {
     this.transactionService.getBySeller(Number(currentUser.id)).subscribe({
       next: (sales) => {
         this.sellerSales = sales ?? [];
-        this.salesMessage = '';
+        if (!preserveMessage) {
+          this.salesMessage = '';
+        }
         this.refreshSalesData();
       },
       error: () => {
@@ -120,25 +160,48 @@ export class SellerDashboardComponent implements OnInit {
 
     this.salesMessage = '';
     this.confirmingSaleIds[sale.id] = true;
+    const previousStatus = sale.status;
+
+    // Optimistic UI update for immediate feedback in the seller table.
+    this.sellerSales = this.sellerSales.map((currentSale) =>
+      Number(currentSale.id) === Number(sale.id)
+        ? { ...currentSale, status: 'completed' }
+        : currentSale
+    );
+    this.refreshSalesData();
 
     this.transactionService.updateSaleStatus(sellerId, sale.id, { status: 'completed' }).subscribe({
       next: () => {
-        this.sellerSales = this.sellerSales.map((currentSale) =>
-          currentSale.id === sale.id
-            ? { ...currentSale, status: 'completed' }
-            : currentSale
-        );
-        this.refreshSalesData();
         this.salesMessageType = 'success';
         this.salesMessage = `Commande #${sale.id} confirmee avec succes.`;
         delete this.confirmingSaleIds[sale.id];
+        this.fetchMySales(true);
       },
       error: () => {
+        this.sellerSales = this.sellerSales.map((currentSale) =>
+          Number(currentSale.id) === Number(sale.id)
+            ? { ...currentSale, status: previousStatus }
+            : currentSale
+        );
+        this.refreshSalesData();
         this.salesMessageType = 'error';
         this.salesMessage = `Impossible de confirmer la commande #${sale.id}.`;
         delete this.confirmingSaleIds[sale.id];
       }
     });
+  }
+
+  private startSalesRealtimeRefresh(): void {
+    this.stopSalesRealtimeRefresh();
+    this.salesRefreshSubscription = interval(5000).subscribe(() => {
+      if (this.currentTab !== 'sales') return;
+      this.fetchMySales(true);
+    });
+  }
+
+  private stopSalesRealtimeRefresh(): void {
+    this.salesRefreshSubscription?.unsubscribe();
+    this.salesRefreshSubscription = undefined;
   }
 
   isPendingSale(sale: SellerSale): boolean {
@@ -166,19 +229,36 @@ export class SellerDashboardComponent implements OnInit {
   }
 
   loadMyProducts(): void {
+    this.fetchMyProducts(true);
+  }
+
+  private fetchMyProducts(showLoader: boolean): void {
     const currentUser = this.authService.getCurrentUser();
     if (!currentUser) {
       console.error('Aucun utilisateur authentifié');
+      this.loading = false;
       this.products = [];
       return;
     }
 
+    this.user = currentUser;
+
     console.log(`Chargement des produits du vendeur ID: ${currentUser.id}`);
-    this.loading = true;
+    if (showLoader) {
+      this.loading = true;
+    }
     this.productService.getProducts({ page: 1, pageSize: 100, sellerId: currentUser.id }).subscribe({
       next: (response) => {
         console.log('Réponse API:', response);
-        const allProducts = ((response?.items ?? []) as Product[]).map((product) => this.normalizeProduct(product));
+        const sourceProducts = Array.isArray(response)
+          ? response
+          : Array.isArray(response?.items)
+            ? response.items
+            : Array.isArray(response?.data)
+              ? response.data
+              : [];
+
+        const allProducts = (sourceProducts as Product[]).map((product) => this.normalizeProduct(product));
         console.log(`Total produits reçus: ${allProducts.length}`);
         this.products = allProducts;
         console.log(`Produits affichés: ${this.products.length}`);
@@ -190,6 +270,19 @@ export class SellerDashboardComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  private startProductsRealtimeRefresh(): void {
+    this.stopProductsRealtimeRefresh();
+    this.productsRefreshSubscription = timer(0, 5000).subscribe(() => {
+      if (this.currentTab !== 'manage' && this.currentTab !== 'environmental') return;
+      this.fetchMyProducts(false);
+    });
+  }
+
+  private stopProductsRealtimeRefresh(): void {
+    this.productsRefreshSubscription?.unsubscribe();
+    this.productsRefreshSubscription = undefined;
   }
 
   publishProduct(): void {
