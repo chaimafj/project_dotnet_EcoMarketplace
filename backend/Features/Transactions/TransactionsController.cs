@@ -27,6 +27,7 @@ namespace EcoMarketplace.API.Controllers
             _ecoScoreService = ecoScoreService;
         }
 
+        // Fonctionnalite: Execute la fonctionnalite principale de la methode.
         [HttpPost("purchase")]
         public async Task<IActionResult> Purchase([FromBody] PurchaseDto dto)
         {
@@ -115,6 +116,7 @@ namespace EcoMarketplace.API.Controllers
             return Ok(new { message = "Purchase created and awaiting seller confirmation.", transaction = result });
         }
 
+        // Fonctionnalite: Execute la fonctionnalite principale de la methode.
         [HttpPost("seller/{sellerId:int}/sales/{transactionId:int}/confirm")]
         public async Task<IActionResult> ConfirmSale(int sellerId, int transactionId)
         {
@@ -149,6 +151,7 @@ namespace EcoMarketplace.API.Controllers
                 transaction.CompletedAt));
         }
 
+        // Fonctionnalite: Met a jour les donnees existantes.
         [HttpPut("seller/{sellerId:int}/sales/{transactionId:int}/status")]
         public async Task<IActionResult> UpdateSaleStatus(int sellerId, int transactionId, [FromBody] UpdateSaleStatusDto dto)
         {
@@ -178,6 +181,7 @@ namespace EcoMarketplace.API.Controllers
                 transaction.CompletedAt));
         }
 
+        // Fonctionnalite: Recupere les donnees demandees.
         [HttpGet("user/{userId:int}")]
         public async Task<IActionResult> GetByUser(int userId)
         {
@@ -200,6 +204,7 @@ namespace EcoMarketplace.API.Controllers
             return Ok(transactions);
         }
 
+        // Fonctionnalite: Recupere les donnees demandees.
         [HttpGet("seller/{sellerId:int}")]
         public async Task<IActionResult> GetBySeller(int sellerId)
         {
@@ -226,3 +231,5 @@ namespace EcoMarketplace.API.Controllers
         }
     }
 }
+
+

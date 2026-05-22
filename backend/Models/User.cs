@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace EcoMarketplace.API.Models
 {
@@ -40,3 +40,4 @@ namespace EcoMarketplace.API.Models
         Admin
     }
 }
+

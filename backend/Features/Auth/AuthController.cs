@@ -10,11 +10,13 @@ namespace EcoMarketplace.API.Controllers
     {
         private readonly IAuthService _authService;
 
+        // Fonctionnalite: Execute la fonctionnalite principale de la methode.
         public AuthController(IAuthService authService)
         {
             _authService = authService;
         }
 
+        // Fonctionnalite: Cree une nouvelle ressource.
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
@@ -29,6 +31,7 @@ namespace EcoMarketplace.API.Controllers
             }
         }
 
+        // Fonctionnalite: Execute la fonctionnalite principale de la methode.
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
@@ -44,3 +47,4 @@ namespace EcoMarketplace.API.Controllers
         }
     }
 }
+

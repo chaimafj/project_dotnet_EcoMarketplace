@@ -1,4 +1,4 @@
-namespace EcoMarketplace.API.Models
+﻿namespace EcoMarketplace.API.Models
 {
     public class Badge
     {
@@ -31,3 +31,4 @@ namespace EcoMarketplace.API.Models
         EcoWarrior
     }
 }
+

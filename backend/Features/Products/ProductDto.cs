@@ -1,4 +1,4 @@
-namespace EcoMarketplace.API.Helpers.DTOs
+﻿namespace EcoMarketplace.API.Helpers.DTOs
 {
     public class EcoScoreBreakdownDto
     {
@@ -52,3 +52,4 @@ namespace EcoMarketplace.API.Helpers.DTOs
         public int? RecycledPercentage { get; set; }
     }
 }
+

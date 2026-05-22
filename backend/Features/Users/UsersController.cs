@@ -13,12 +13,14 @@ namespace EcoMarketplace.API.Controllers
         private readonly IUserRepository _userRepository;
         private readonly IMapper _mapper;
 
+        // Fonctionnalite: Execute la fonctionnalite principale de la methode.
         public UsersController(IUserRepository userRepository, IMapper mapper)
         {
             _userRepository = userRepository;
             _mapper = mapper;
         }
 
+        // Fonctionnalite: Recupere les donnees demandees.
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -27,6 +29,7 @@ namespace EcoMarketplace.API.Controllers
             return Ok(ToUserDto(user));
         }
 
+        // Fonctionnalite: Execute la fonctionnalite principale de la methode.
         [HttpGet("me")]
         public async Task<IActionResult> Me()
         {
@@ -37,6 +40,7 @@ namespace EcoMarketplace.API.Controllers
             return Ok(ToUserDto(first));
         }
 
+        // Fonctionnalite: Met a jour les donnees existantes.
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateUserDto dto)
         {
@@ -72,6 +76,7 @@ namespace EcoMarketplace.API.Controllers
             return NoContent();
         }
 
+        // Fonctionnalite: Transforme les donnees vers le format cible.
         private static UserDto ToUserDto(Models.User user)
         {
             var displayName = string.Join(' ', new[] { user.FirstName, user.LastName }
@@ -89,3 +94,5 @@ namespace EcoMarketplace.API.Controllers
         }
     }
 }
+
+

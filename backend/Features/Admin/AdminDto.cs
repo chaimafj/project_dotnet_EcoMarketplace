@@ -1,4 +1,4 @@
-namespace EcoMarketplace.API.DTOs
+﻿namespace EcoMarketplace.API.DTOs
 {
     public record CurrencyAmountDto(
         string Currency,
@@ -47,3 +47,4 @@ namespace EcoMarketplace.API.DTOs
 
     public record AdminUserStatusUpdateDto(string Status);
 }
+

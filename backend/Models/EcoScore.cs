@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace EcoMarketplace.API.Models
 {
@@ -10,3 +10,5 @@ namespace EcoMarketplace.API.Models
         public DateTime CalculatedAt { get; set; } = DateTime.UtcNow;
     }
 }
+
+

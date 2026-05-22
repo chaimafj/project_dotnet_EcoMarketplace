@@ -1,4 +1,4 @@
-using EcoMarketplace.API.Models;
+﻿using EcoMarketplace.API.Models;
 
 namespace EcoMarketplace.API.Repositories
 {
@@ -25,3 +25,4 @@ namespace EcoMarketplace.API.Repositories
             decimal? maxPrice = null);
     }
 }
+

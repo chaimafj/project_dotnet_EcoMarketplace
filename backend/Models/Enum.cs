@@ -1,4 +1,4 @@
-namespace EcoMarketplace.API.Models
+﻿namespace EcoMarketplace.API.Models
 {
     public enum Role
     {
@@ -19,6 +19,8 @@ namespace EcoMarketplace.API.Models
     {
         DT = 0,    // Dinar Tunisien
         EUR = 1,   // Euro
-        USD = 2    // Dollar américain
+        USD = 2    // Dollar amÃ©ricain
     }
 }
+
+

@@ -1,4 +1,4 @@
-using EcoMarketplace.API.Models;
+﻿using EcoMarketplace.API.Models;
 
 namespace EcoMarketplace.API.Repositories
 {
@@ -8,9 +8,10 @@ namespace EcoMarketplace.API.Repositories
         Task<User?> GetByEmailAsync(string email);  // Ajout du ?
         Task<User?> GetByUsernameAsync(string username);  // Ajout du ?
         Task<IEnumerable<User>> GetAllAsync();
-        Task<User> AddAsync(User user);  // Retourne Task<User> (non nullable car on crée l'utilisateur)
+        Task<User> AddAsync(User user);  // Retourne Task<User> (non nullable car on crÃ©e l'utilisateur)
         Task UpdateAsync(User user);
         Task DeleteAsync(int id);
         Task<bool> ExistsAsync(string email, string username);
     }
 }
+

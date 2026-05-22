@@ -1,3 +1,4 @@
+﻿// [Commentaire backend] Point d'entree de l'application: configuration des services, middleware et routes API.
 using EcoMarketplace.API.Helpers;
 using EcoMarketplace.API.Middleware;
 using EcoMarketplace.API.Repositories;
@@ -67,7 +68,7 @@ using (var scope = app.Services.CreateScope())
     var defaultProductTitlesToCleanup = new[]
     {
         "Smartphone reconditionne",
-        "Smartphone reconditionné",
+        "Smartphone reconditionnÃ©",
         "T-shirt en coton bio",
         "Table en bois massif"
     };
@@ -160,3 +161,4 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+

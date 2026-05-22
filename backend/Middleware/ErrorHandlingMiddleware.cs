@@ -8,12 +8,14 @@ namespace EcoMarketplace.API.Middleware
         private readonly RequestDelegate _next;
         private readonly ILogger<ErrorHandlingMiddleware> _logger;
 
+        // Fonctionnalite: Execute la fonctionnalite principale de la methode.
         public ErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorHandlingMiddleware> logger)
         {
             _next = next;
             _logger = logger;
         }
 
+        // Fonctionnalite: Execute la fonctionnalite principale de la methode.
         public async Task InvokeAsync(HttpContext context)
         {
             try
@@ -27,6 +29,7 @@ namespace EcoMarketplace.API.Middleware
             }
         }
 
+        // Fonctionnalite: Traite le flux principal de la requete.
         private static async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
             context.Response.ContentType = "application/json";
@@ -44,3 +47,4 @@ namespace EcoMarketplace.API.Middleware
         }
     }
 }
+

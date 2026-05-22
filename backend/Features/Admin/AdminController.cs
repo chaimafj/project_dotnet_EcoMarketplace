@@ -16,6 +16,7 @@ namespace EcoMarketplace.API.Controllers
         private readonly IProductRepository _productRepository;
         private readonly ApplicationDbContext _dbContext;
 
+        // Inject repositories and DbContext used by admin endpoints.
         public AdminController(
             IUserRepository userRepository,
             IProductRepository productRepository,
@@ -26,6 +27,7 @@ namespace EcoMarketplace.API.Controllers
             _dbContext = dbContext;
         }
 
+        // Fonctionnalite: Recupere les donnees demandees.
         [HttpGet("users")]
         public async Task<IActionResult> GetUsers()
         {
@@ -54,6 +56,7 @@ namespace EcoMarketplace.API.Controllers
             return Ok(users);
         }
 
+        // Fonctionnalite: Met a jour les donnees existantes.
         [HttpPut("users/{id:int}/status")]
         public async Task<IActionResult> UpdateUserStatus(int id, [FromBody] AdminUserStatusUpdateDto dto)
         {
@@ -75,6 +78,7 @@ namespace EcoMarketplace.API.Controllers
             return Ok(new { message = "User status updated.", id, status = user.IsActive ? "active" : "inactive" });
         }
 
+        // Fonctionnalite: Supprime la ressource ciblee.
         [HttpDelete("users/{id:int}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
@@ -88,6 +92,7 @@ namespace EcoMarketplace.API.Controllers
             return NoContent();
         }
 
+        // Fonctionnalite: Recupere les donnees demandees.
         [HttpGet("products")]
         public async Task<IActionResult> GetProducts()
         {
@@ -122,6 +127,7 @@ namespace EcoMarketplace.API.Controllers
             return Ok(result);
         }
 
+        // Fonctionnalite: Valide les regles metier.
         [HttpPost("validate-product/{id:int}")]
         public async Task<IActionResult> ValidateProduct(int id)
         {
@@ -132,6 +138,7 @@ namespace EcoMarketplace.API.Controllers
             return Ok(new { message = "Product validated.", id });
         }
 
+        // Fonctionnalite: Supprime la ressource ciblee.
         [HttpDelete("products/{id:int}")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
@@ -152,6 +159,7 @@ namespace EcoMarketplace.API.Controllers
             return NoContent();
         }
 
+        // Fonctionnalite: Execute la fonctionnalite principale de la methode.
         [HttpGet("stats")]
         public async Task<IActionResult> Stats()
         {
@@ -194,3 +202,5 @@ namespace EcoMarketplace.API.Controllers
         }
     }
 }
+
+

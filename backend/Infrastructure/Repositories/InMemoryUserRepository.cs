@@ -8,6 +8,7 @@ namespace EcoMarketplace.API.Repositories
         private readonly ConcurrentDictionary<int, User> _users = new();
         private int _nextId = 1;
 
+        // Fonctionnalite: Execute la fonctionnalite principale de la methode.
         public InMemoryUserRepository()
         {
             // Ajouter un utilisateur de test
@@ -45,29 +46,34 @@ namespace EcoMarketplace.API.Repositories
             _users[testSeller.Id] = testSeller;
         }
 
+        // Fonctionnalite: Recupere les donnees demandees.
         public async Task<User?> GetByIdAsync(int id)
         {
             _users.TryGetValue(id, out var user);
             return await Task.FromResult(user);
         }
 
+        // Fonctionnalite: Recupere les donnees demandees.
         public async Task<User?> GetByEmailAsync(string email)
         {
             var user = _users.Values.FirstOrDefault(u => u.Email == email);
             return await Task.FromResult(user);
         }
 
+        // Fonctionnalite: Recupere les donnees demandees.
         public async Task<User?> GetByUsernameAsync(string username)
         {
             var user = _users.Values.FirstOrDefault(u => u.Username == username);
             return await Task.FromResult(user);
         }
 
+        // Fonctionnalite: Recupere les donnees demandees.
         public async Task<IEnumerable<User>> GetAllAsync()
         {
             return await Task.FromResult(_users.Values.ToList());
         }
 
+        // Fonctionnalite: Cree une nouvelle ressource.
         public async Task<User> AddAsync(User user)
         {
             user.Id = _nextId++;
@@ -78,6 +84,7 @@ namespace EcoMarketplace.API.Repositories
             return await Task.FromResult(user);
         }
 
+        // Fonctionnalite: Met a jour les donnees existantes.
         public async Task UpdateAsync(User user)
         {
             if (_users.ContainsKey(user.Id))
@@ -87,6 +94,7 @@ namespace EcoMarketplace.API.Repositories
             await Task.CompletedTask;
         }
 
+        // Fonctionnalite: Supprime la ressource ciblee.
         public async Task DeleteAsync(int id)
         {
             if (_users.TryGetValue(id, out var user))
@@ -97,6 +105,7 @@ namespace EcoMarketplace.API.Repositories
             await Task.CompletedTask;
         }
 
+        // Fonctionnalite: Verifie une condition metier.
         public async Task<bool> ExistsAsync(string email, string username)
         {
             var exists = _users.Values.Any(u => u.Email == email || u.Username == username);
@@ -104,3 +113,4 @@ namespace EcoMarketplace.API.Repositories
         }
     }
 }
+

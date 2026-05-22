@@ -1,4 +1,4 @@
-namespace EcoMarketplace.API.DTOs
+﻿namespace EcoMarketplace.API.DTOs
 {
     public record UserDto(
         int Id,
@@ -17,3 +17,5 @@ namespace EcoMarketplace.API.DTOs
         string? ProfilePictureUrl,
         string? Bio);
 }
+
+

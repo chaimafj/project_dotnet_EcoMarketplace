@@ -52,12 +52,12 @@ namespace EcoMarketplace.API.Controllers
             IEnumerable<Product> products;
             int totalCount;
 
-            // Si sellerId est fourni, récupérer les produits de ce vendeur
+            // Si sellerId est fourni, rÃƒÂ©cupÃƒÂ©rer les produits de ce vendeur
             if (sellerId.HasValue)
             {
                 var sellerProducts = await _productRepository.GetBySellerIdAsync(sellerId.Value);
                 
-                // Appliquer les filtres supplémentaires
+                // Appliquer les filtres supplÃƒÂ©mentaires
                 var query = sellerProducts.AsQueryable();
                 
                 if (!string.IsNullOrWhiteSpace(search))
@@ -117,6 +117,7 @@ namespace EcoMarketplace.API.Controllers
             });
         }
 
+        // Fonctionnalite: Recupere les donnees demandees.
         [HttpGet("{id}")]
         public async Task<IActionResult> GetProduct(int id)
         {
@@ -129,24 +130,25 @@ namespace EcoMarketplace.API.Controllers
             return Ok(productDto);
         }
 
+        // Fonctionnalite: Cree une nouvelle ressource.
         [HttpPost]
         public async Task<IActionResult> CreateProduct([FromBody] CreateProductDto createProductDto)
         {
             try
             {
-                // Pour le développement, on accepte un sellerId depuis le frontend.
-                // Dans un environnement réel, récupérez l'ID depuis le token JWT.
+                // Pour le dÃƒÂ©veloppement, on accepte un sellerId depuis le frontend.
+                // Dans un environnement rÃƒÂ©el, rÃƒÂ©cupÃƒÂ©rez l'ID depuis le token JWT.
                 int sellerId = createProductDto.SellerId ?? 1;
 
                 var seller = await _userRepository.GetByIdAsync(sellerId);
                 if (seller == null)
                 {
-                    // Réutiliser un vendeur de test existant pour éviter les doublons
+                    // RÃƒÂ©utiliser un vendeur de test existant pour ÃƒÂ©viter les doublons
                     seller = await _userRepository.GetByUsernameAsync("testseller");
 
                     if (seller == null)
                     {
-                        // Créer un vendeur de test si nécessaire
+                        // CrÃƒÂ©er un vendeur de test si nÃƒÂ©cessaire
                         seller = new User
                         {
                             Email = "seller.test@ecomarketplace.local",
@@ -202,6 +204,7 @@ namespace EcoMarketplace.API.Controllers
             }
         }
 
+        // Fonctionnalite: Recherche les elements correspondant aux criteres.
         [HttpGet("search")]
         public async Task<IActionResult> Search([FromQuery] string q)
         {
@@ -214,6 +217,7 @@ namespace EcoMarketplace.API.Controllers
             return Ok(productDtos);
         }
 
+        // Fonctionnalite: Recupere les donnees demandees.
         [HttpGet("category/{category}")]
         public async Task<IActionResult> GetByCategory(string category)
         {
@@ -227,6 +231,7 @@ namespace EcoMarketplace.API.Controllers
             return BadRequest(new { message = "Invalid category" });
         }
 
+        // Fonctionnalite: Met a jour les donnees existantes.
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateProduct(int id, [FromBody] CreateProductDto updateProductDto)
         {
@@ -266,6 +271,7 @@ namespace EcoMarketplace.API.Controllers
             return Ok(ToProductDto(product));
         }
 
+        // Fonctionnalite: Supprime la ressource ciblee.
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
@@ -279,6 +285,7 @@ namespace EcoMarketplace.API.Controllers
             return NoContent();
         }
 
+        // Fonctionnalite: Recupere les donnees demandees.
         [HttpGet("{id}/eco-score")]
         public async Task<IActionResult> GetProductEcoScore(int id)
         {
@@ -292,6 +299,7 @@ namespace EcoMarketplace.API.Controllers
             return Ok(ecoBreakdown);
         }
 
+        // Fonctionnalite: Transforme les donnees vers le format cible.
         private ProductDto ToProductDto(Product product)
         {
             var dto = _mapper.Map<ProductDto>(product);
@@ -300,6 +308,7 @@ namespace EcoMarketplace.API.Controllers
             return dto;
         }
 
+        // Fonctionnalite: Execute la fonctionnalite principale de la methode.
         private static void ApplyAutomaticEcoInputs(Product product, CreateProductDto dto)
         {
             var normalizedMaterial = (product.Material ?? string.Empty).Trim().ToLowerInvariant();
@@ -321,6 +330,7 @@ namespace EcoMarketplace.API.Controllers
             product.CarbonFootprint = Math.Clamp(product.CarbonFootprint, 5d, 95d);
         }
 
+        // Fonctionnalite: Execute la fonctionnalite principale de la methode.
         private static bool InferRecycledFromMaterial(string material)
         {
             if (string.IsNullOrWhiteSpace(material)) return false;
@@ -332,6 +342,7 @@ namespace EcoMarketplace.API.Controllers
                 || material.Contains("seconde main");
         }
 
+        // Fonctionnalite: Execute la fonctionnalite principale de la methode.
         private static bool InferSustainableFromMaterial(string material)
         {
             if (string.IsNullOrWhiteSpace(material)) return false;
@@ -344,6 +355,7 @@ namespace EcoMarketplace.API.Controllers
                 || material.Contains("eco");
         }
 
+        // Fonctionnalite: Execute la fonctionnalite principale de la methode.
         private static int EstimateRecycledPercentage(ProductCondition condition, bool isRecycled, bool isSustainable)
         {
             var baseValue = condition switch
@@ -362,6 +374,7 @@ namespace EcoMarketplace.API.Controllers
             return Math.Clamp(baseValue, 0, 100);
         }
 
+        // Fonctionnalite: Execute la fonctionnalite principale de la methode.
         private static double EstimateCarbonFootprint(ProductCategory category, ProductCondition condition, bool isRecycled, bool isSustainable)
         {
             var categoryBase = category switch
@@ -392,3 +405,4 @@ namespace EcoMarketplace.API.Controllers
         }
     }
 }
+

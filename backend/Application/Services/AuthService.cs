@@ -8,15 +8,17 @@ namespace EcoMarketplace.API.Services
         private readonly IUserRepository _userRepository;
         private readonly IConfiguration _configuration;
 
+        // Fonctionnalite: Execute la fonctionnalite principale de la methode.
         public AuthService(IUserRepository userRepository, IConfiguration configuration)
         {
             _userRepository = userRepository;
             _configuration = configuration;
         }
 
+        // Fonctionnalite: Cree une nouvelle ressource.
         public async Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto)
         {
-            // Vérifier si l'utilisateur existe déjà
+            // VÃƒÂ©rifier si l'utilisateur existe dÃƒÂ©jÃƒÂ 
             var exists = await _userRepository.ExistsAsync(registerDto.Email, registerDto.Username);
             if (exists)
                 throw new Exception("User with this email or username already exists");
@@ -61,6 +63,7 @@ namespace EcoMarketplace.API.Services
             };
         }
 
+        // Fonctionnalite: Execute la fonctionnalite principale de la methode.
         public async Task<AuthResponseDto> LoginAsync(LoginDto loginDto)
         {
             var user = await _userRepository.GetByEmailAsync(loginDto.Email);
@@ -89,11 +92,13 @@ namespace EcoMarketplace.API.Services
             };
         }
 
+        // Fonctionnalite: Execute la fonctionnalite principale de la methode.
         private string GenerateJwtToken(User user)
         {
-            // Pour le développement, on retourne un token simple
+            // Pour le dÃƒÂ©veloppement, on retourne un token simple
             // Dans un environnement de production, utilisez un vrai JWT
             return $"fake-jwt-token-for-user-{user.Id}";
         }
     }
 }
+

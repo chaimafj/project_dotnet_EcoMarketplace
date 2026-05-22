@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace EcoMarketplace.API.Helpers.DTOs
 {
@@ -45,3 +45,4 @@ namespace EcoMarketplace.API.Helpers.DTOs
         public string Token { get; set; }
     }
 }
+

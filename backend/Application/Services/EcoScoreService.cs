@@ -10,18 +10,19 @@ namespace EcoMarketplace.API.Services
             ["coton biologique"] = 90,
             ["organic cotton"] = 90,
             ["plastique recycle"] = 85,
-            ["plastique recyclé"] = 85,
+            ["plastique recyclÃƒÂ©"] = 85,
             ["recycled plastic"] = 85,
             ["plastique standard"] = 40,
             ["standard plastic"] = 40,
             ["non recyclable"] = 20,
             ["materiau non recyclable"] = 20,
-            ["matériau non recyclable"] = 20,
+            ["matÃƒÂ©riau non recyclable"] = 20,
             ["bamboo"] = 88,
             ["bois certifie fsc"] = 82,
-            ["bois certifié fsc"] = 82
+            ["bois certifiÃƒÂ© fsc"] = 82
         };
 
+        // Fonctionnalite: Execute la fonctionnalite principale de la methode.
         public EcoScoreBreakdownDto Calculate(Product product)
         {
             var materialScore = CalculateMaterialScore(product.Material, product.IsRecycled, product.IsSustainable);
@@ -55,6 +56,7 @@ namespace EcoMarketplace.API.Services
             };
         }
 
+        // Fonctionnalite: Execute la fonctionnalite principale de la methode.
         private static int CalculateMaterialScore(string? material, bool isRecycled, bool isSustainable)
         {
             if (!string.IsNullOrWhiteSpace(material) && MaterialScores.TryGetValue(material.Trim(), out var score))
@@ -69,6 +71,7 @@ namespace EcoMarketplace.API.Services
             return ClampTo100(fallback);
         }
 
+        // Fonctionnalite: Recupere les donnees demandees.
         private static string GetSustainabilityLevel(int finalScore)
         {
             if (finalScore >= 80) return "Excellent";
@@ -76,6 +79,9 @@ namespace EcoMarketplace.API.Services
             return "Faible durabilite";
         }
 
+        // Fonctionnalite: Execute la fonctionnalite principale de la methode.
         private static int ClampTo100(int value) => Math.Clamp(value, 0, 100);
     }
 }
+
+

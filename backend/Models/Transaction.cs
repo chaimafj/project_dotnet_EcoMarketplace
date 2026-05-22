@@ -1,4 +1,4 @@
-namespace EcoMarketplace.API.Models
+﻿namespace EcoMarketplace.API.Models
 {
     public class Transaction
     {
@@ -41,3 +41,4 @@ namespace EcoMarketplace.API.Models
         Refunded
     }
 }
+

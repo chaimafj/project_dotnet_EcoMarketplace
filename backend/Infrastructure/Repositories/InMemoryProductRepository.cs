@@ -8,12 +8,14 @@ namespace EcoMarketplace.API.Repositories
         private readonly ConcurrentDictionary<int, Product> _products = new();
         private int _nextId = 1;
 
+        // Fonctionnalite: Execute la fonctionnalite principale de la methode.
         public InMemoryProductRepository()
         {
             // Ajouter quelques produits de test
             AddTestProducts();
         }
 
+        // Fonctionnalite: Cree une nouvelle ressource.
         private void AddTestProducts()
         {
             var testProducts = new[]
@@ -21,15 +23,15 @@ namespace EcoMarketplace.API.Repositories
                 new Product
                 {
                     Id = _nextId++,
-                    Title = "Smartphone reconditionné",
-                    Description = "Smartphone comme neuf, batterie remplacée",
+                    Title = "Smartphone reconditionnÃƒÂ©",
+                    Description = "Smartphone comme neuf, batterie remplacÃƒÂ©e",
                     Price = 299.99m,
                     Condition = ProductCondition.LikeNew,
                     Category = ProductCategory.Electronics,
                     SellerId = 2, // ID du vendeur de test
                     Images = new[] { "phone1.jpg", "phone2.jpg" },
                     Location = "Paris",
-                    Material = "Aluminium recyclé",
+                    Material = "Aluminium recyclÃƒÂ©",
                     IsRecycled = true,
                     IsSustainable = true,
                     RecycledPercentage = 85,
@@ -60,14 +62,14 @@ namespace EcoMarketplace.API.Repositories
                 {
                     Id = _nextId++,
                     Title = "Table en bois massif",
-                    Description = "Table en chêne massif issue de forêts gérées durablement",
+                    Description = "Table en chÃƒÂªne massif issue de forÃƒÂªts gÃƒÂ©rÃƒÂ©es durablement",
                     Price = 450.00m,
                     Condition = ProductCondition.Good,
                     Category = ProductCategory.Furniture,
                     SellerId = 2,
                     Images = new[] { "table1.jpg", "table2.jpg" },
                     Location = "Bordeaux",
-                    Material = "Bois certifié FSC",
+                    Material = "Bois certifiÃƒÂ© FSC",
                     IsRecycled = false,
                     IsSustainable = true,
                     RecycledPercentage = 0,
@@ -83,6 +85,7 @@ namespace EcoMarketplace.API.Repositories
             }
         }
 
+        // Fonctionnalite: Recupere les donnees demandees.
         public async Task<Product?> GetByIdAsync(int id)
         {
             _products.TryGetValue(id, out var product);
@@ -135,6 +138,7 @@ namespace EcoMarketplace.API.Repositories
             return await Task.FromResult(products);
         }
 
+        // Fonctionnalite: Recupere les donnees demandees.
         public async Task<IEnumerable<Product>> GetBySellerIdAsync(int sellerId)
         {
             var products = _products.Values
@@ -145,6 +149,7 @@ namespace EcoMarketplace.API.Repositories
             return await Task.FromResult(products);
         }
 
+        // Fonctionnalite: Recupere les donnees demandees.
         public async Task<IEnumerable<Product>> GetByCategoryAsync(ProductCategory category)
         {
             var products = _products.Values
@@ -155,6 +160,7 @@ namespace EcoMarketplace.API.Repositories
             return await Task.FromResult(products);
         }
 
+        // Fonctionnalite: Recherche les elements correspondant aux criteres.
         public async Task<IEnumerable<Product>> SearchAsync(string searchTerm)
         {
             if (string.IsNullOrWhiteSpace(searchTerm))
@@ -173,6 +179,7 @@ namespace EcoMarketplace.API.Repositories
             return await Task.FromResult(products);
         }
 
+        // Fonctionnalite: Cree une nouvelle ressource.
         public async Task<Product> AddAsync(Product product)
         {
             product.Id = _nextId++;
@@ -184,6 +191,7 @@ namespace EcoMarketplace.API.Repositories
             return await Task.FromResult(product);
         }
 
+        // Fonctionnalite: Met a jour les donnees existantes.
         public async Task UpdateAsync(Product product)
         {
             if (_products.ContainsKey(product.Id))
@@ -194,6 +202,7 @@ namespace EcoMarketplace.API.Repositories
             await Task.CompletedTask;
         }
 
+        // Fonctionnalite: Supprime la ressource ciblee.
         public async Task DeleteAsync(int id)
         {
             if (_products.TryGetValue(id, out var product))
@@ -242,3 +251,4 @@ namespace EcoMarketplace.API.Repositories
         }
     }
 }
+

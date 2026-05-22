@@ -1,4 +1,4 @@
-namespace EcoMarketplace.API.DTOs
+﻿namespace EcoMarketplace.API.DTOs
 {
     public record TransactionDto(int Id, int BuyerId, int ProductId, int Quantity, decimal TotalPrice);
     public record PurchaseDto(
@@ -52,3 +52,5 @@ namespace EcoMarketplace.API.DTOs
 
     public record UpdateSaleStatusDto(string Status);
 }
+
+

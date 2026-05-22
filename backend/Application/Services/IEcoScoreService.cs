@@ -1,4 +1,4 @@
-using EcoMarketplace.API.Helpers.DTOs;
+﻿using EcoMarketplace.API.Helpers.DTOs;
 using EcoMarketplace.API.Models;
 
 namespace EcoMarketplace.API.Services
@@ -8,3 +8,5 @@ namespace EcoMarketplace.API.Services
         EcoScoreBreakdownDto Calculate(Product product);
     }
 }
+
+

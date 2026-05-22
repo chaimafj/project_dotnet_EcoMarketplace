@@ -1,4 +1,4 @@
-using EcoMarketplace.API.Helpers.DTOs;
+﻿using EcoMarketplace.API.Helpers.DTOs;
 
 namespace EcoMarketplace.API.Services
 {
@@ -8,3 +8,4 @@ namespace EcoMarketplace.API.Services
         Task<AuthResponseDto> LoginAsync(LoginDto loginDto);
     }
 }
+

@@ -8,11 +8,13 @@ namespace EcoMarketplace.API.Repositories
     {
         private readonly ApplicationDbContext _context;
 
+        // Fonctionnalite: Execute la fonctionnalite principale de la methode.
         public EfProductRepository(ApplicationDbContext context)
         {
             _context = context;
         }
 
+        // Fonctionnalite: Recupere les donnees demandees.
         public async Task<Product?> GetByIdAsync(int id)
         {
             return await _context.Products
@@ -21,6 +23,8 @@ namespace EcoMarketplace.API.Repositories
                 .FirstOrDefaultAsync(p => p.Id == id && p.Status != ProductStatus.Removed);
         }
 
+        // Methode: GetAllAsync
+        // Role: execute la logique metier de GetAllAsync.
         public async Task<IEnumerable<Product>> GetAllAsync(
             int page,
             int pageSize,
@@ -67,6 +71,7 @@ namespace EcoMarketplace.API.Repositories
                 .ToListAsync();
         }
 
+        // Fonctionnalite: Recupere les donnees demandees.
         public async Task<IEnumerable<Product>> GetBySellerIdAsync(int sellerId)
         {
             return await _context.Products
@@ -76,6 +81,7 @@ namespace EcoMarketplace.API.Repositories
                 .ToListAsync();
         }
 
+        // Fonctionnalite: Recupere les donnees demandees.
         public async Task<IEnumerable<Product>> GetByCategoryAsync(ProductCategory category)
         {
             return await _context.Products
@@ -85,6 +91,7 @@ namespace EcoMarketplace.API.Repositories
                 .ToListAsync();
         }
 
+        // Fonctionnalite: Recherche les elements correspondant aux criteres.
         public async Task<IEnumerable<Product>> SearchAsync(string searchTerm)
         {
             searchTerm = searchTerm.ToLower();
@@ -99,6 +106,7 @@ namespace EcoMarketplace.API.Repositories
                 .ToListAsync();
         }
 
+        // Fonctionnalite: Cree une nouvelle ressource.
         public async Task<Product> AddAsync(Product product)
         {
             product.CreatedAt = DateTime.UtcNow;
@@ -111,6 +119,7 @@ namespace EcoMarketplace.API.Repositories
             return product;
         }
 
+        // Fonctionnalite: Met a jour les donnees existantes.
         public async Task UpdateAsync(Product product)
         {
             product.UpdatedAt = DateTime.UtcNow;
@@ -118,6 +127,7 @@ namespace EcoMarketplace.API.Repositories
             await _context.SaveChangesAsync();
         }
 
+        // Fonctionnalite: Supprime la ressource ciblee.
         public async Task DeleteAsync(int id)
         {
             var product = await GetByIdAsync(id);
@@ -128,6 +138,8 @@ namespace EcoMarketplace.API.Repositories
             }
         }
 
+        // Methode: GetTotalCountAsync
+        // Role: execute la logique metier de GetTotalCountAsync.
         public async Task<int> GetTotalCountAsync(
             string? search = null,
             ProductCategory? category = null,
@@ -167,3 +179,4 @@ namespace EcoMarketplace.API.Repositories
         }
     }
 }
+

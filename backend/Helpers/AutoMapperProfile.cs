@@ -6,6 +6,7 @@ namespace EcoMarketplace.API.Helpers
 {
     public class AutoMapperProfile : Profile
     {
+        // Fonctionnalite: Execute la fonctionnalite principale de la methode.
         public AutoMapperProfile()
         {
             // User mappings
@@ -40,3 +41,4 @@ namespace EcoMarketplace.API.Helpers
         public DateTime CreatedAt { get; set; }
     }
 }
+
